@@ -1,9 +1,9 @@
 [project]
 name = "mpcrpc"
 version = "0.1.0"
-description = ""
+description = "MPC-HC event-based Discord rich presence integration"
 authors = [
-    {name = "heatoz",email = "kinonatsu27@gmail.com"}
+    {name = "chronod",email = "klhwjm@protonmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.14,<4.0"
