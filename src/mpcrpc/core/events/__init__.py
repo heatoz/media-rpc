@@ -1,4 +1,3 @@
-from .media import PlaybackTitleUpdated
-from .mpc import PlaybackSessionUpdated
+from .mpc import PlaybackSessionUpdated, PlaybackFileUpdated
 
-__all__ = ["PlaybackTitleUpdated", "PlaybackSessionUpdated"]
+__all__ = ["PlaybackSessionUpdated", "PlaybackFileUpdated", "MediaParsed"]
