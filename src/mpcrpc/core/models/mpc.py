@@ -23,9 +23,9 @@ class PlaybackSession:
 			KeyError:
 				If required playback fields are missing.
 		"""
-		match: dict = dict(P_TAG.findall(raw))
+		matches: dict = dict(P_TAG.findall(raw))
 
-		self.file: str = match["file"]
-		self.state: str = match["state"]
-		self.pos: str = match["position"]
-		self.dur: str = match["duration"]
+		self.file: str = matches["file"]
+		self.state: str = matches["state"]
+		self.pos: str = matches["position"]
+		self.dur: str = matches["duration"]
