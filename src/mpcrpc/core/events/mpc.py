@@ -2,7 +2,7 @@ from mpcrpc.core.models import PlaybackSession
 
 class PlaybackSessionUpdated:
     """
-    Represents a PlaybackSession update triggered by MPC service.
+    Represents a PlaybackSession update triggered by the MPC poller service.
     """
 
     def __init__(self, p_session: PlaybackSession) -> None:
