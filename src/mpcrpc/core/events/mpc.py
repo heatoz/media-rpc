@@ -1,4 +1,4 @@
-from mpcrpc.core.models import PlaybackSession
+from mpcrpc.core.models import PlaybackSession, PlaybackFile
 
 class PlaybackSessionUpdated:
     """
@@ -15,3 +15,19 @@ class PlaybackSessionUpdated:
         """
 
         self.p_session: PlaybackSession = p_session
+
+class PlaybackFileUpdated:
+    """
+    Represents a PlaybackFile update triggered by the MPC poller service.
+    """
+
+    def __init__(self, p_file: PlaybackFile) -> None:
+        """
+        Initializes a PlaybackFileUpdated event type.
+
+        Attributes:
+            p_file (PlaybackFile):
+                The updated PlaybackFile.
+        """
+
+        self.p_file: PlaybackFile = p_file
