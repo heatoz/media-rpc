@@ -1,4 +1,4 @@
-from guessit import guessit, MatchesDict
+from guessit import guessit
 import re
 
 class Filename:
@@ -64,7 +64,9 @@ class Filename:
 				MIME type of the container (e.g., "video/x-matroska").
 		"""
 
-		matches: MatchesDict = guessit(filename)
+		# couldn't type this, cannot import
+		# MatchesDict
+		matches = guessit(filename)
 
 		for key, value in matches.items():
 			setattr(self, key, value)
