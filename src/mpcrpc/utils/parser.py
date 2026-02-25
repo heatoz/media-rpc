@@ -86,7 +86,7 @@ class Regex:
 	)
 
 	@staticmethod
-	def Variables(raw: str) -> dict:
+	def Variables(raw: str) -> dict[str, str]:
 		"""
 		Parses the raw HTML returned by the Variables endpoint.
 
@@ -99,4 +99,4 @@ class Regex:
 				A dictionary containing the parsed data.
 		"""
 
-		return dict(P_TAG.findall(raw))
+		return dict(Regex.P_TAG.findall(raw))
