@@ -40,4 +40,4 @@ class PlaybackFile:
 				If any required playback fields are missing.
 		"""
 
-		self.title: str = p_data["file"]
+		self.name: str = p_data["file"]
