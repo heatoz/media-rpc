@@ -1,6 +1,7 @@
 from mpcrpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
-from mpcrpc.infra import HttpClient, EventBus, Parser, Cache
 from mpcrpc.core.models import PlaybackSession, PlaybackFile
+from mpcrpc.infra import HttpClient, EventBus
+from mpcrpc.utils import Cache, Parser
 from typing import Any
 
 class MPC:
