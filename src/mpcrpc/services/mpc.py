@@ -13,6 +13,14 @@ class MPC:
 		Initialize the MPC client.
 
 		Args:
+			event_bus (EventBus):
+				The Event Bus used by the service.
+
+			poll_interval (int):
+				The polling loop interval, needed for
+				the calculation of the PlaybackSessionUpdated
+				event.
+				
 			port (int):
 				Port where the MPC web interface is running.
 		"""
