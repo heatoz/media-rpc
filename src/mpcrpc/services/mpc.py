@@ -17,10 +17,9 @@ class MPC:
 				The Event Bus used by the service.
 
 			poll_interval (int):
-				The polling loop interval, needed for
-				the calculation of the PlaybackSessionUpdated
-				event.
-				
+				The polling loop interval on miliseconds,
+				needed for the calculation of PlaybackSessionUpdated.
+
 			port (int):
 				Port where the MPC web interface is running.
 		"""
