@@ -24,7 +24,7 @@ class Cache:
 
 		return setattr(self, key, value)
 
-	def get(self, key: str) -> Any:
+	def get(self, key: str, default: Any = None) -> Any:
 		"""
 		Retrieve a value from the cache by its key.
 
@@ -37,8 +37,8 @@ class Cache:
 				The cached value associated with the given key.
 
 		Raises:
-			AttributeError:
+			None:
 				If the key does not exist in the cache.
 		"""
 
-		return getattr(self, key)
+		return getattr(self, key, default)
