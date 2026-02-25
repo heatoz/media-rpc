@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Any
 import json
 
 class Config:
@@ -53,8 +53,8 @@ class Config:
             data: Any = json.load(f)
         
         # Gets the configuration of the selected adapter.
-        config_adapters: dict[str, dict[str, Union[str, int]]] = data.get("config_adapters", {})
-        adapter_config: dict[str, Union[str, int]] = config_adapters.get(adapter, {})
+        config_adapters: dict[str, dict[str, str | int]] = data.get("config_adapters", {})
+        adapter_config: dict[str, str | int] = config_adapters.get(adapter, {})
 
         return Config(
             int(data["polling_interval"]),
