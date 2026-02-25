@@ -38,8 +38,8 @@ class HttpClient:
 				The URL to send the GET request to.
 
 		Returns:
-			requests.Response:
-				The Response object from the GET request.
+			str:
+				The request response on text.
 		"""
 
 		r: aiohttp.ClientResponse = await self.session.get(
@@ -60,8 +60,8 @@ class HttpClient:
 				The payload to send as JSON in the POST body.
 
 		Returns:
-			requests.Response:
-				The Response object from the POST request.
+			str:
+				The request response on text.
 		"""
 
 		r: aiohttp.ClientResponse = await self.session.post(
