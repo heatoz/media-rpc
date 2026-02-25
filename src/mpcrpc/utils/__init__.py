@@ -1,4 +1,4 @@
-from .parser import Parser
+from .parser import Regex, Filename
 from .cache import Cache
 
-__all__ = ["Parser", "Cache"]
+__all__ = ["Regex", "Filename", "Cache"]
