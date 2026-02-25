@@ -37,7 +37,7 @@ class MPC:
 		"""
 
 		response: str = await self._client.get(
-			f"localhost:{self.port}/variables.html"
+			f"http://localhost:{self.port}/variables.html"
 		)
 
 		p_data: dict = Regex.Variables(response)
