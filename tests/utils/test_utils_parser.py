@@ -24,6 +24,7 @@ async def GetVariables(port: int) -> str:
     response: str = await http_client.get(f"http://localhost:{port}/variables.html")
     return response
 
+@pytest.mark.asyncio(loop_scope="class")
 class TestRegex:
     """
     Unit tests for the Regex parsing logic class.
