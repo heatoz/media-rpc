@@ -1,31 +1,43 @@
-import re
-
-# MPC /variables P tags pattern
-P_TAG: re.Pattern = re.compile(
-	r'<p id="(file|filedir|state|position|duration)">(.+?)</p>',
-	re.IGNORECASE
-)
-
 class PlaybackSession:
 	"""
-	Represents a MPC Playback Session.
+	Represents an MPC playback session.
 	"""
 
-	def __init__(self, raw: str) -> None:
+	def __init__(self, p_data: dict) -> None:
 		"""
-		Initialize a PlaybackSession from raw MPC HTML response.
+		Initializes a PlaybackSession instance.
 
 		Args:
-			raw (str):
-				HTML string returned by the MPC variables endpoint.
+			p_data (dict):
+				A dictionary containing parsed data from the Variables endpoint.
+				This dictionary should be the return value of Parser.Variables().
 
 		Raises:
 			KeyError:
-				If required playback fields are missing.
+				If any required playback fields are missing.
 		"""
-		matches: dict = dict(P_TAG.findall(raw))
 
-		self.file: str = matches["file"]
-		self.state: str = matches["state"]
-		self.pos: str = matches["position"]
-		self.dur: str = matches["duration"]
+		self.state: str = p_data["state"]
+		self.pos: str = p_data["position"]
+		self.dur: str = p_data["duration"]
+
+class PlaybackFile:
+	"""
+	Represents an MPC playback file.
+	"""
+
+	def __init__(self, p_data: dict) -> None:
+		"""
+		Initializes a PlaybackFile instance.
+
+		Args:
+			p_data (dict):
+				A dictionary containing parsed data from the Variables endpoint.
+				This dictionary should be the return value of Parser.Variables().
+
+		Raises:
+			KeyError:
+				If any required playback fields are missing.
+		"""
+
+		self.file: str = p_data["file"]
