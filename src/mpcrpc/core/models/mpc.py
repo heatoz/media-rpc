@@ -17,9 +17,9 @@ class PlaybackSession:
 				If any required playback fields are missing.
 		"""
 
-		self.state: str = p_data["state"]
-		self.pos: str = p_data["position"]
-		self.dur: str = p_data["duration"]
+		self.state: int = int(p_data["state"])
+		self.pos: int = int(p_data["position"])
+		self.dur: int = int(p_data["duration"])
 
 class PlaybackFile:
 	"""
