@@ -127,6 +127,10 @@ class RPC:
 				Media to be updated.
 		"""
 
+		if p_session.state == PlaybackState.EMPTY:
+			
+			await self._rpc.clear()
+
 		if p_session.state == PlaybackState.PAUSED:
 
 			if isinstance(media, Movie):
