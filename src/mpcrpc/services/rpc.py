@@ -1,14 +1,14 @@
 from mpcrpc.core.models import PlaybackSession, PlaybackState, Movie, Series
 from mpcrpc.core.events import PlaybackSessionUpdated, MediaParsed
 from pypresence.types import ActivityType
+from pypresence import AioPresence
 from mpcrpc.infra import EventBus
-from pypresence import Presence
 from mpcrpc.utils import Cache
 import time
 
 class RPC:
 	"""
-	Manages all the Rich Presence operations.
+	Manages the Discord Rich Presence operations.
 	"""
 
 	def __init__(self, event_bus: EventBus) -> None:
@@ -16,15 +16,17 @@ class RPC:
 		Initialize a RPC Service object.
 
 		Attributes:
+			cache (Cache):
+				The service cache manager.
+
 			event_bus (EventBus):
 				The EventBus used by the service.
 			
-			cache (Cache):
-				The service cache manager.
-			
-			rpc (Presence):
+			rpc (AioPresence):
 				The Discord rich presence manager.
 		"""
+
+		self._cache: Cache = Cache()
 
 		self._event_bus: EventBus = event_bus
 
@@ -42,20 +44,32 @@ class RPC:
 			self.HandleMediaParsed
 		)
 
-		self._cache: Cache = Cache()
+	async def start(self) -> None:
+		"""
+		Initialize a new AioPresence object.
 
-		# MPC-RPC Discord application id.
-		self._rpc: Presence = Presence(1411516401541185566)
-		self._rpc.connect()
+		Note:
+			I know a separated method just for
+			that isn't very good, but the connect
+			method had to be awaited.
+		"""
 
-	async def HandleSessionUpdated(self, p_session: PlaybackSession) -> None:
+		# mpc-rpc discord application id.
+		self._rpc: AioPresence = AioPresence(1411516401541185566)
+
+		await self._rpc.connect()
+
+	async def HandleSessionUpdated(self, event: PlaybackSessionUpdated) -> None:
 		"""
 			PlaybackSessionUpdated event handler.
 
 			Args:
-				p_session (PlaybackSession):
-					The PlaybackSessionUpdated event data model.
+				event (PlaybackSessionUpdated):
+					The PlaybackSessionUpdated event, contains
+					the PlaybackSession as p_session.
 		"""
+
+		p_session: PlaybackSession = event.p_session
 
 		self._cache.put("c_session", p_session)
 
@@ -68,17 +82,20 @@ class RPC:
 		# on the first events.
 		if c_media:
 			
-			self.Update(p_session, c_media)
+			await self.Update(p_session.p_session, c_media)
 			
 
-	async def HandleMediaParsed(self, media: Movie | Series) -> None:
+	async def HandleMediaParsed(self, event: MediaParsed) -> None:
 		"""
 			MediaParsed event handler.
 
 			Args:
-				media (Movie | Series):
-					The MediaParsed event data model.
+				event (MediaParsed):
+					The MediaParsed event, contains
+					the Media as media.
 		"""
+
+		media: Movie | Series = event.media
 
 		self._cache.put("c_media", media)
 
@@ -91,9 +108,9 @@ class RPC:
 		# on the first events.
 		if c_session:
 			
-			self.Update(c_session, media)
+			await self.Update(c_session, media)
 
-	def Update(self, p_session: PlaybackSession, media: Movie | Series) -> None:
+	async def Update(self, p_session: PlaybackSession, media: Movie | Series) -> None:
 		"""
 		Updates Discord rich presence.
 
@@ -113,7 +130,7 @@ class RPC:
 		if p_session.state == PlaybackState.PAUSED:
 
 			if isinstance(media, Movie):
-				self._rpc.update(
+				await self._rpc.update(
 					activity_type = ActivityType.WATCHING,
 					name = media.title,
 					state = f"{media.director}, {media.year}",
@@ -123,7 +140,7 @@ class RPC:
 				)
 
 			if isinstance(media, Series):
-				self._rpc.update(
+				await self._rpc.update(
 					activity_type = ActivityType.WATCHING,
 					name = media.title,
 					state = f"Episode {media.episode}, Season {media.season}",
@@ -137,7 +154,7 @@ class RPC:
 			now: int = int(time.time() * 1000)
 
 			if isinstance(media, Movie):
-				self._rpc.update(
+				await self._rpc.update(
 					activity_type = ActivityType.WATCHING,
 					start = now - p_session.pos,
 					end = now - p_session.pos + p_session.dur,
@@ -149,7 +166,7 @@ class RPC:
 				)
 
 			if isinstance(media, Series):
-				self._rpc.update(
+				await self._rpc.update(
 					activity_type = ActivityType.WATCHING,
 					start = now - p_session.pos,
 					end = now - p_session.pos + p_session.dur,
