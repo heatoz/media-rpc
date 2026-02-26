@@ -73,7 +73,7 @@ class Media:
 			# by the search. Made the Media type checks
 			# use this value instead of the p_file because
 			# sometimes guessit does a wrong match.
-			query_r: dict[str, str | int] = await self.adapter.Query(search_r)
+			query_r: dict[str, str] = await self.adapter.Query(search_r)
 
 			if query_r["type"] == "series":
 
