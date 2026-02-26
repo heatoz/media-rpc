@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 class PlaybackSession:
 	"""
 	Represents an MPC playback session.
@@ -20,6 +22,17 @@ class PlaybackSession:
 		self.state: int = int(p_data["state"])
 		self.pos: int = int(p_data["position"])
 		self.dur: int = int(p_data["duration"])
+
+class PlaybackState(IntEnum):
+	"""
+	Enum representing the MPC-HC Web Interface
+	PlaybackSession states, created for better
+	management on RPC Service.
+	"""
+
+	PLAYING = 2
+	PAUSED = 1
+	EMPTY = -1
 
 class PlaybackFile:
 	"""
