@@ -50,9 +50,15 @@ class IMDB:
 			IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(name)}&limit=1"
 		)
 
+		j_resp: Any = json.loads(response)
+
+		# did this to keep a standard between
+		# adapters, maybe there's a better solution.
+		_type: str = j_resp.get("titles")[0].get("type").replace("tvSeries", "series")
+
 		return {
-			"type": json.loads(response).get("titles")[0].get("type"),
-			"id": json.loads(response).get("titles")[0].get("id")
+			"type": _type,
+			"id": j_resp.get("titles")[0].get("id")
 		}
 	
 	async def Query(self, search_r: dict[str, str]) -> dict[str, str]:
@@ -80,13 +86,6 @@ class IMDB:
 		)
 
 		j_resp: Any = json.loads(response)
-
-		# idk if this is just a bloat but made this
-		# to keep a good standard between all
-		# adapters return values.
-		# Note: didn't do a replacement on movies also
-		# because their type, on IMDB, already comes as 'movie'.
-		_type: str = j_resp.get("type").replace("tvSeries", "series")
 
 		return {
 			"director": j_resp.get("directors")[0].get("displayName"),
