@@ -65,7 +65,8 @@ class IMDB:
 		
 		Returns:
 			dict:
-				Contains
+				Contains the necessary title data
+				for initializing a Movie or Series object.
 		"""
 
 		response: str = await self._client.get(
