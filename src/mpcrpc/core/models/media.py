@@ -3,7 +3,7 @@ class Movie:
 	Media Service data model representing a Movie.
 	"""
 
-	def __init__(self, title: str, director: str, year: int, poster: str) -> None:
+	def __init__(self, title: str, director: str, year: int | str, poster: str) -> None:
 		"""
 		Initialize a Movie data object.
 
