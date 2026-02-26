@@ -81,6 +81,7 @@ class Media:
 				# playback file since that's the only way to get them.
             	# If they don't exist, default to None to avoid AttributeError.
 				# TODO: Make TVDB query for the episode title.
+				# Also make it query the season poster, not the default one.
 				self._event_bus.publish(
 					MediaParsed(
 						Series(
