@@ -21,10 +21,10 @@ class Movie:
 				A url containing the movie poster.
 		"""
 
+		self.year: int = int(year)
 		self.director: str = director
 		self.poster: str = poster
 		self.title: str = title
-		self.year: int = year
 
 class Series:
 	"""
