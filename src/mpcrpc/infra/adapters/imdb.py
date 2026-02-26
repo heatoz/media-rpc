@@ -86,7 +86,7 @@ class IMDB:
 		# adapters return values.
 		# Note: didn't do a replacement on movies also
 		# because their type, on IMDB, already comes as 'movie'.
-		_type = j_resp.get("type").replace("tvSeries", "series")
+		_type: str = j_resp.get("type").replace("tvSeries", "series")
 
 		return {
 			"director": j_resp.get("directors")[0].get("displayName"),
