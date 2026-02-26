@@ -12,6 +12,11 @@ class MPC:
 		"""
 		Initialize the MPC client.
 
+		Note:
+			Currently, a poll_interval variable is necessary
+			to have a idea of when the user seeked, so we can
+			stay without sending events when still synced.
+
 		Args:
 			event_bus (EventBus):
 				The Event Bus used by the service.
@@ -45,8 +50,8 @@ class MPC:
 		p_session: PlaybackSession = PlaybackSession(p_data)
 		p_file: PlaybackFile = PlaybackFile(p_data)
 
-		c_session: PlaybackSession = self._cache.get("c_session")
-		c_file: PlaybackFile = self._cache.get("c_file")
+		c_session: PlaybackSession | None = self._cache.get("c_session")
+		c_file: PlaybackFile | None = self._cache.get("c_file")
 
 		# Checks if there is a previous session cached.
 		c_session_exists = (
