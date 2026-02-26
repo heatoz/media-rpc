@@ -65,7 +65,10 @@ class Media:
 
 		# Returns a id that follows the adapter format,
 		# for example: tt0308664 for IMDB, 1398 for TMDB.
-		search_r: str = await self.adapter.Search(p_file.title)
+		# Note: I planned the Search method on adapters to only
+		# return the media id, sadly, TMDB needs a media type
+		# to be able to do a Query.
+		search_r: dict[str, str] = await self.adapter.Search(p_file.title)
 
 		if search_r:
 
@@ -75,7 +78,7 @@ class Media:
 			# sometimes guessit does a wrong match.
 			query_r: dict[str, str] = await self.adapter.Query(search_r)
 
-			if query_r["type"] == "series":
+			if search_r["type"] == "series":
 
 				# Safely get episode and season attributes from the
 				# playback file since that's the only way to get them.
@@ -97,7 +100,7 @@ class Media:
 					)
 				)
 
-			if query_r["type"] == "movie":
+			if search_r["type"] == "movie":
 
 				self._event_bus.publish(
 					MediaParsed(
