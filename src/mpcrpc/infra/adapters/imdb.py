@@ -22,7 +22,7 @@ class IMDB:
 			}
 		)
 
-	async def Search(self, name: str) -> str | None:
+	async def Search(self, name: str) -> dict[str, str]:
 		"""
 		Searches a title from IMDB.
 
@@ -37,8 +37,9 @@ class IMDB:
 				The title name.
 
 		Returns:
-			str:
-				The id of the first result from the search.
+			dict:
+				Returns the search result id
+				and its type.
 			None:
 				If the query returns no results.
 		"""
@@ -47,9 +48,12 @@ class IMDB:
 			f"https://api.imdbapi.dev/search/titles?query={urllib.parse.quote(name)}&limit=1"
 		)
 
-		return json.loads(response).get("titles")[0].get("id")
+		return {
+			"type": json.loads(response).get("titles")[0].get("type"),
+			"id": json.loads(response).get("titles")[0].get("id")
+		}
 	
-	async def Query(self, mid: str) -> dict[str, str]:
+	async def Query(self, search_r: dict[str, str]) -> dict[str, str]:
 		"""
 		Queries a title details from its id.
 
@@ -70,7 +74,7 @@ class IMDB:
 		"""
 
 		response: str = await self._client.get(
-			f"https://api.imdbapi.dev/titles/{mid}"
+			f"https://api.imdbapi.dev/titles/{search_r["id"]}"
 		)
 
 		j_resp: Any = json.loads(response)
@@ -86,6 +90,5 @@ class IMDB:
 			"director": j_resp.get("directors")[0].get("displayName"),
 			"poster": j_resp.get("primaryImage").get("url"),
 			"title": j_resp.get("primaryTitle"),
-			"year": j_resp.get("startYear"),
-			"type": _type
+			"year": j_resp.get("startYear")
 		}
