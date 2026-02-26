@@ -11,7 +11,7 @@ class MediaParsed:
 
         Args:
             media (Movie | Series):
-                The parsed media.
+                The parsed media object.
         """
         
         self.media = media
