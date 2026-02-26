@@ -38,7 +38,7 @@ class Media:
 
 		self.adapter: IMDB | TMDB = adapter
 
-	async def Parse(self, p_file: PlaybackFile) -> None:
+	async def Parse(self, event: PlaybackFileUpdated) -> None:
 		"""
 		Parses a PlaybackFile received from PlaybackFileUpdated
 		event and publishes the parsed media data to the event bus.
@@ -57,18 +57,23 @@ class Media:
 			to that, please rename your files.
 
 		Args:
-			p_file (PlaybackFile):
-				The PlaybackFile from PlaybackFileUpdated.
+			event (PlaybackFileUpdated):
+				The PlaybackFileUpdated event, contains
+				the PlaybackFile as p_file, which contains
+				the filename on name attribute.
 		"""
 
-		p_file: Filename = Filename(p_file.title)
+		# the repeat of p_file here may sound confusing
+		# but i didn't think about a better one to put on
+		# the PlaybackFileUpdated event.
+		p_file: Filename = Filename(event.p_file.name)
 
 		# Returns a id that follows the adapter format,
 		# for example: tt0308664 for IMDB, 1398 for TMDB.
 		# Note: I planned the Search method on adapters to only
 		# return the media id, sadly, TMDB needs a media type
 		# to be able to do a Query.
-		search_r: dict[str, str] = await self.adapter.Search(p_file.title)
+		search_r: dict[str, str] | None = await self.adapter.Search(p_file.title)
 
 		if search_r:
 
@@ -85,7 +90,7 @@ class Media:
             	# If they don't exist, default to None to avoid AttributeError.
 				# TODO: Make TVDB query for the episode title.
 				# Also make it query the season poster, not the default one.
-				self._event_bus.publish(
+				await self._event_bus.publish(
 					MediaParsed(
 						Series(
 							title = query_r["title"],
@@ -102,7 +107,7 @@ class Media:
 
 			if search_r["type"] == "movie":
 
-				self._event_bus.publish(
+				await self._event_bus.publish(
 					MediaParsed(
 						Movie(
 							title = query_r["title"],
