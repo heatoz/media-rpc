@@ -65,7 +65,7 @@ class Media:
 
 		# Returns a id that follows the adapter format,
 		# for example: tt0308664 for IMDB, 1398 for TMDB.
-		search_r: int = await self.adapter.Search(p_file.title)
+		search_r: str = await self.adapter.Search(p_file.title)
 
 		if search_r:
 
