@@ -24,7 +24,7 @@ class IMDB:
 			}
 		)
 
-	async def Search(self, name: str) -> dict[str, str]:
+	async def Search(self, name: str) -> dict[str, str] | None:
 		"""
 		Searches a title from IMDB.
 
@@ -43,12 +43,15 @@ class IMDB:
 				Returns the search result id
 				and its type.
 			None:
-				If the query returns no results.
+				If the search returns no results.
 		"""
 
 		response: str = await self._client.get(
 			IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(name)}&limit=1"
 		)
+
+		if response == "{}":
+			return None
 
 		j_resp: Any = json.loads(response)
 
