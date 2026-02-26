@@ -1,4 +1,4 @@
-from mpcrpc.core.models import PlaybackSession, PlaybackState, PlaybackFile
+from mpcrpc.core.models import PlaybackSession, PlaybackFile
 from mpcrpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
 from mpcrpc.infra import HttpClient, EventBus
 from mpcrpc.utils import Cache, Regex
@@ -72,13 +72,10 @@ class MPC:
 
 		# Checks if the state of the session
 		# (playing/paused/etc) has changed.
-		# Also checks if the new p_session state
-		# is different of PlaybackState.EMPTY (-1).
 		p_state_changed = (
 			c_session is not None
 			and (
 				c_session.state != p_session.state
-				and p_session.state != PlaybackState.EMPTY
 			)
 		)
 
