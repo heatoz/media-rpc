@@ -7,6 +7,8 @@ class IMDB:
 	Adapter for the IMDB API methods.
 	"""
 
+	BASE_URL: str = "https://api.imdbapi.dev"
+
 	def __init__(self):
 		"""
 		Initialize a IMDB adapter object.
@@ -45,7 +47,7 @@ class IMDB:
 		"""
 
 		response: str = await self._client.get(
-			f"https://api.imdbapi.dev/search/titles?query={urllib.parse.quote(name)}&limit=1"
+			IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(name)}&limit=1"
 		)
 
 		return {
@@ -74,7 +76,7 @@ class IMDB:
 		"""
 
 		response: str = await self._client.get(
-			f"https://api.imdbapi.dev/titles/{search_r["id"]}"
+			IMDB.BASE_URL + f"/titles/{search_r["id"]}"
 		)
 
 		j_resp: Any = json.loads(response)
