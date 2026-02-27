@@ -1,5 +1,5 @@
+from mpcrpc.core.events import PlaybackFileUpdated, PlaybackSessionUpdated, MediaParsed
 from mpcrpc.core.models import PlaybackSession, PlaybackState, Movie, Series
-from mpcrpc.core.events import PlaybackSessionUpdated, MediaParsed
 from pypresence.types import ActivityType
 from pypresence import AioPresence
 from mpcrpc.infra import EventBus
@@ -29,6 +29,13 @@ class RPC:
 		self._cache: Cache = Cache()
 
 		self._event_bus: EventBus = event_bus
+
+		# Subscribes HandleFileUpdated()
+		# to PlaybackFileUpdated.
+		self._event_bus.subscribe(
+			PlaybackFileUpdated,
+			self.HandleFileUpdated
+		)
 
 		# Subscribes HandleSessionUpdated()
 		# to PlaybackSessionUpdated.
@@ -61,6 +68,26 @@ class RPC:
 		self._rpc: AioPresence = AioPresence(client_id)
 
 		await self._rpc.connect()
+
+	async def HandleFileUpdated(self, event: PlaybackFileUpdated) -> None:
+		"""
+		PlaybackFileUpdated event handler.
+
+		Note:
+			The only reason this handler is here is to
+			avoid stale presences when switching from a
+			recognized media to one that isn't recognized,
+			avoiding that only PlaybackSession gets updated.
+
+		Args:
+			event (PlaybackFileUpdated):
+				The PlaybackFileUpdated event, contains
+				the PlaybackFile as p_file.
+		"""
+
+		self._cache.put("c_media", None)
+
+		await self._rpc.clear()
 
 	async def HandleSessionUpdated(self, event: PlaybackSessionUpdated) -> None:
 		"""
@@ -146,7 +173,7 @@ class RPC:
 					name = media.title,
 					state = f"{media.director}, {media.year}",
 					large_image = media.poster,
-					small_image = "",
+					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/paused.png",
 					small_text = "Paused"
 				)
 
@@ -156,7 +183,7 @@ class RPC:
 					name = media.title,
 					state = f"Episode {media.episode}, Season {media.season}",
 					large_image = media.poster,
-					small_image = "",
+					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/paused.png",
 					small_text = "Paused"
 				)        
 
@@ -174,7 +201,7 @@ class RPC:
 					name = media.title,
 					state = f"{media.director}, {media.year}",
 					large_image = media.poster,
-					small_image = "",
+					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/playing.png",
 					small_text = "Playing"
 				)
 
@@ -186,6 +213,6 @@ class RPC:
 					name = media.title,
 					state = f"Episode {media.episode}, Season {media.season}",
 					large_image = media.poster,
-					small_image = "",
+					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/playing.png",
 					small_text = "Playing"
 				)
