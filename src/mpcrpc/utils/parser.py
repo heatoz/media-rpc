@@ -1,7 +1,7 @@
 from guessit import guessit
 import re
 
-class Filename:
+class MediaFile:
 	"""
 	Represents a parsed media file.
 	"""
@@ -10,10 +10,6 @@ class Filename:
 		"""
 		Thin wrapper around guessit.
 		
-		Args:
-			filename (str):
-				Filename.
-				
 		Attributes:
 			title (str):
 				Main title of the media.
@@ -64,7 +60,8 @@ class Filename:
 				MIME type of the container (e.g., "video/x-matroska").
 		"""
 
-	def Parse(self, filename: str) -> None:
+	@staticmethod
+	def Parse(self, filename: str) -> MediaFile:
 		"""
 		Parses a raw file name into a parsed object.
 
@@ -73,11 +70,15 @@ class Filename:
 				The file to be parsed filename.
 		"""
 
+		m_file = MediaFile()
+
 		# sadly couldn't type annotate this :(
 		matches = guessit(filename)
 
 		for key, value in matches.items():
-			setattr(self, key, value)
+			setattr(m_file, key, value)
+		
+		return m_file
 
 class Regex:
 	"""
