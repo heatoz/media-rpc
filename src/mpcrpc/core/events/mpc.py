@@ -1,4 +1,7 @@
-from mpcrpc.core.models import PlaybackSession, PlaybackFile
+from mpcrpc.core.models import (
+    PlaybackSession,
+    PlaybackFile
+)
 
 class PlaybackSessionUpdated:
     """

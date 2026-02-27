@@ -1,4 +1,7 @@
-from mpcrpc.core.models import Movie, Series
+from mpcrpc.core.models import (
+    Movie,
+    Series
+)
 
 class MediaParsed:
     """
