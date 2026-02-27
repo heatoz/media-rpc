@@ -1,6 +1,11 @@
-from mpcrpc.infra.adapters import SearchResult, QueryResult
+from mpcrpc.infra.adapters import (
+	SearchResult,
+	QueryResult
+)
+
 from mpcrpc.infra import HttpClient
 from mpcrpc.utils import MediaFile
+
 import urllib.parse, json
 from typing import Any
 
