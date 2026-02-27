@@ -1,8 +1,8 @@
+from mpcrpc.infra.adapters import SearchResult, QueryResult, IMDB, TMDB
 from mpcrpc.core.events import PlaybackFileUpdated, MediaParsed
 from mpcrpc.core.models import PlaybackFile, Movie, Series
-from mpcrpc.infra.adapters import IMDB, TMDB
+from mpcrpc.utils import MediaFile
 from mpcrpc.infra import EventBus
-from mpcrpc.utils import Filename
 
 class Media:
 	"""
@@ -66,24 +66,22 @@ class Media:
 		# the repeat of p_file here may sound confusing
 		# but i didn't think about a better one to put on
 		# the PlaybackFileUpdated event.
-		p_file: Filename = Filename(event.p_file.name)
+		# Note: named the parsed mediafile to m_file
+		# to avoid confusions with the raw playbackfile p_file.
+		m_file: MediaFile = MediaFile.Parse(event.p_file.name)
 
-		# Returns a id that follows the adapter format,
-		# for example: tt0308664 for IMDB, 1398 for TMDB.
-		# Note: I planned the Search method on adapters to only
-		# return the media id, sadly, TMDB needs a media type
-		# to be able to do a Query.
-		search_r: dict[str, str] | None = await self.adapter.Search(p_file)
+		# Returns None if search finds nothing.
+		search_r: SearchResult | None = await self.adapter.Search(m_file)
 
 		if search_r:
 
 			# Makes a detailed query using the id returned
 			# by the search. Made the Media type checks
-			# use this value instead of the p_file because
+			# use this value instead of the m_file because
 			# sometimes guessit does a wrong match.
-			query_r: dict[str, str] = await self.adapter.Query(search_r)
+			query_r: QueryResult = await self.adapter.Query(search_r)
 
-			if search_r["type"] == "series":
+			if search_r.type == "series":
 
 				# Safely get episode and season attributes from the
 				# playback file since that's the only way to get them.
@@ -93,27 +91,27 @@ class Media:
 				await self._event_bus.publish(
 					MediaParsed(
 						Series(
-							title = query_r["title"],
+							title = query_r.title,
 							# A Series MUST have a Season and Episode
 							# I've thought about making it optional
 							# because of some guessit mismatch cases
 							# but haven't had the time for that.
-							episode = p_file.episode,
-							season = p_file.season,
-							poster = query_r["poster"]
+							episode = m_file.episode,
+							season = m_file.season,
+							poster = query_r.poster
 						)
 					)
 				)
 
-			if search_r["type"] == "movie":
+			if search_r.type == "movie":
 
 				await self._event_bus.publish(
 					MediaParsed(
 						Movie(
-							title = query_r["title"],
-							director = query_r["director"],
-							year = query_r["year"],
-							poster = query_r["poster"]
+							title = query_r.title,
+							director = query_r.director,
+							year = query_r.year,
+							poster = query_r.poster
 						)
 					)
 				)
