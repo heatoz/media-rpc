@@ -44,9 +44,13 @@ class RPC:
 			self.HandleMediaParsed
 		)
 
-	async def start(self) -> None:
+	async def start(self, client_id: int) -> None:
 		"""
 		Initialize a new AioPresence object.
+
+		Args:
+			client_id (int):
+				Client id to start the presence on.
 
 		Note:
 			I know a separated method just for
@@ -54,8 +58,7 @@ class RPC:
 			method had to be awaited.
 		"""
 
-		# mpc-rpc discord application id.
-		self._rpc: AioPresence = AioPresence(1411516401541185566)
+		self._rpc: AioPresence = AioPresence(client_id)
 
 		await self._rpc.connect()
 
@@ -69,11 +72,11 @@ class RPC:
 					the PlaybackSession as p_session.
 		"""
 
+		c_media: Movie | Series | None = self._cache.get("c_media")
+
 		p_session: PlaybackSession = event.p_session
 
 		self._cache.put("c_session", p_session)
-
-		c_media: Movie | Series | None = self._cache.get("c_media")
 
 		# Check if there is a Media already cached and
 		# being presented at the rich presence, only
@@ -95,11 +98,11 @@ class RPC:
 					the Media as media.
 		"""
 
+		c_session: PlaybackSession | None = self._cache.get("c_session")
+
 		media: Movie | Series = event.media
 
 		self._cache.put("c_media", media)
-
-		c_session: PlaybackSession | None = self._cache.get("c_session")
 
 		# Check if there is a Session already cached and
 		# being presented at the rich presence, only
@@ -156,12 +159,14 @@ class RPC:
 		if p_session.state == PlaybackState.PLAYING:
 
 			now: int = int(time.time() * 1000)
+			start = now - (p_session.pos // 1000)
+			end = now - p_session.pos + (p_session.dur // 1000)
 
 			if isinstance(media, Movie):
 				await self._rpc.update(
 					activity_type = ActivityType.WATCHING,
-					start = now - (p_session.pos // 1000),
-					end = now - p_session.pos + (p_session.dur // 1000),
+					start = start,
+					end = end,
 					name = media.title,
 					state = f"{media.director}, {media.year}",
 					large_image = media.poster,
@@ -172,8 +177,8 @@ class RPC:
 			if isinstance(media, Series):
 				await self._rpc.update(
 					activity_type = ActivityType.WATCHING,
-					start = now - p_session.pos,
-					end = now - p_session.pos + p_session.dur,
+					start = start,
+					end = end,
 					name = media.title,
 					state = f"Episode {media.episode}, Season {media.season}",
 					large_image = media.poster,
