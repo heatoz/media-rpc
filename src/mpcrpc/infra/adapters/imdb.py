@@ -1,4 +1,5 @@
 from mpcrpc.infra import HttpClient
+from mpcrpc.utils import Filename
 import urllib.parse, json
 from typing import Any
 
@@ -24,7 +25,7 @@ class IMDB:
 			}
 		)
 
-	async def Search(self, name: str) -> dict[str, str] | None:
+	async def Search(self, filename: Filename) -> dict[str, str] | None:
 		"""
 		Searches a title from IMDB.
 
@@ -35,8 +36,8 @@ class IMDB:
 			maybe i'll change this on future.
 
 		Args:
-			name (str):
-				The title name.
+			filename (Filename):
+				The file parsed Filename object.
 
 		Returns:
 			dict:
@@ -46,9 +47,21 @@ class IMDB:
 				If the search returns no results.
 		"""
 
-		response: str = await self._client.get(
-			IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(name)}&limit=1"
-		)
+		if filename.type == "movie":
+
+			if filename.year:
+
+				query_string: str = f"{filename.title} {filename.year}"
+
+				response: str = await self._client.get(
+					IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(query_string)}&limit=1"
+				)
+
+		else:
+
+			response: str = await self._client.get(
+				IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(filename.title)}&limit=1"
+			)
 
 		if response == "{}":
 			return None
@@ -93,6 +106,6 @@ class IMDB:
 		return {
 			"director": j_resp.get("directors")[0].get("displayName"),
 			"poster": j_resp.get("primaryImage").get("url"),
-			"title": j_resp.get("primaryTitle"),
+			"title": j_resp.get("originalTitle"),
 			"year": j_resp.get("startYear")
 		}
