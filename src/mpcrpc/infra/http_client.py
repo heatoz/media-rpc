@@ -29,7 +29,7 @@ class HttpClient:
 			cookies = cookies
 		)
 
-	async def get(self, path: str) -> aiohttp.ClientResponse:
+	async def get(self, path: str) -> str:
 		"""
 		Perform a synchronous HTTP GET request.
 
@@ -38,17 +38,17 @@ class HttpClient:
 				The URL to send the GET request to.
 
 		Returns:
-			aiohttp.ClientResponse:
-				The aiohttp ClientResponse object.
+			str:
+				The request response on text.
 		"""
 
 		r: aiohttp.ClientResponse = await self.session.get(
 			path
 		)
 
-		return r
+		return await r.text(encoding="utf-8")
 
-	async def post(self, path: str, data: dict) -> aiohttp.ClientResponse:
+	async def post(self, path: str, data: dict) -> str:
 		"""
 		Perform a synchronous HTTP POST request with JSON-encoded data.
 
@@ -60,8 +60,8 @@ class HttpClient:
 				The payload to send as JSON in the POST body.
 
 		Returns:
-			aiohttp.ClientResponse:
-				The aiohttp ClientResponse object.
+			str:
+				The request response on text.
 		"""
 
 		r: aiohttp.ClientResponse = await self.session.post(
@@ -69,7 +69,7 @@ class HttpClient:
 			data=data
 		)
 
-		return r
+		return await r.text(encoding="utf-8")
 
 	async def close(self) -> None:
 		"""
