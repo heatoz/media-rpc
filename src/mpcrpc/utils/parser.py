@@ -61,7 +61,7 @@ class MediaFile:
 		"""
 
 	@staticmethod
-	def Parse(self, filename: str) -> MediaFile:
+	def Parse(filename: str) -> MediaFile:
 		"""
 		Parses a raw file name into a parsed object.
 
