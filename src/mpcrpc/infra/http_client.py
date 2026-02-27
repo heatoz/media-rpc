@@ -1,4 +1,7 @@
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import (
+	ClientSession,
+	ClientResponse
+)
 
 class HttpClient:
 	"""

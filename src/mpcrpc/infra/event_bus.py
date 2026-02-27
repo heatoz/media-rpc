@@ -1,4 +1,10 @@
-from typing import Callable, Type, Any, Awaitable
+from typing import (
+	Callable,
+	Type,
+	Any,
+	Awaitable
+)
+
 from collections import defaultdict
 import asyncio
 
