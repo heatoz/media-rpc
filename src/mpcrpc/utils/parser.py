@@ -3,10 +3,10 @@ import re
 
 class Filename:
 	"""
-	Represents a parsed media filename.
+	Represents a parsed media file.
 	"""
 
-	def __init__(self, filename: str) -> None:
+	def __init__(self) -> None:
 		"""
 		Thin wrapper around guessit.
 		
@@ -64,8 +64,16 @@ class Filename:
 				MIME type of the container (e.g., "video/x-matroska").
 		"""
 
-		# couldn't type this, cannot import
-		# MatchesDict
+	def Parse(self, filename: str) -> None:
+		"""
+		Parses a raw file name into a parsed object.
+
+		Args:
+			filename (str):
+				The file to be parsed filename.
+		"""
+
+		# sadly couldn't type annotate this :(
 		matches = guessit(filename)
 
 		for key, value in matches.items():
