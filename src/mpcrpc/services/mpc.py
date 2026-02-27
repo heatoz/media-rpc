@@ -93,7 +93,7 @@ class MPC:
 		# if it exists, check if the current
 		# is equal to the cached one,
 		# then update cache and publish event.
-		if not c_file or c_file != p_file:
+		if not c_file or c_file.name != p_file.name:
 
 			self._cache.put("c_file", p_file)
 
