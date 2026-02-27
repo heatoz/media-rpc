@@ -158,9 +158,9 @@ class RPC:
 
 		if p_session.state == PlaybackState.PLAYING:
 
-			now: int = int(time.time() * 1000)
-			start = now - (p_session.pos // 1000)
-			end = now - p_session.pos + (p_session.dur // 1000)
+			now: int = int(time.mktime(time.localtime()))
+			start: int = now - p_session.pos // 1000
+			end: int = now + (p_session.dur - p_session.pos) // 1000
 
 			if isinstance(media, Movie):
 				await self._rpc.update(
