@@ -82,7 +82,7 @@ class RPC:
 		# on the first events.
 		if c_media:
 			
-			await self.Update(p_session.p_session, c_media)
+			await self.Update(p_session, c_media)
 			
 
 	async def HandleMediaParsed(self, event: MediaParsed) -> None:
@@ -128,7 +128,7 @@ class RPC:
 		"""
 
 		if p_session.state == PlaybackState.EMPTY:
-			
+
 			await self._rpc.clear()
 
 		if p_session.state == PlaybackState.PAUSED:
@@ -160,8 +160,8 @@ class RPC:
 			if isinstance(media, Movie):
 				await self._rpc.update(
 					activity_type = ActivityType.WATCHING,
-					start = now - p_session.pos,
-					end = now - p_session.pos + p_session.dur,
+					start = now - (p_session.pos // 1000),
+					end = now - p_session.pos + (p_session.dur // 1000),
 					name = media.title,
 					state = f"{media.director}, {media.year}",
 					large_image = media.poster,
