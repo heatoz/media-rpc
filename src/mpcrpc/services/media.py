@@ -73,7 +73,7 @@ class Media:
 		# Note: I planned the Search method on adapters to only
 		# return the media id, sadly, TMDB needs a media type
 		# to be able to do a Query.
-		search_r: dict[str, str] | None = await self.adapter.Search(p_file.title)
+		search_r: dict[str, str] | None = await self.adapter.Search(p_file)
 
 		if search_r:
 
@@ -98,8 +98,8 @@ class Media:
 							# I've thought about making it optional
 							# because of some guessit mismatch cases
 							# but haven't had the time for that.
-							episode = p_file["episode"],
-							season = p_file["season"],
+							episode = p_file.episode,
+							season = p_file.season,
 							poster = query_r["poster"]
 						)
 					)
