@@ -45,7 +45,7 @@ class PlaybackFile:
 
 		Args:
 			p_data (dict):
-				A dictionary containing parsed data from the Variables endpoint.
+				A dictionary containing the Playback data from the Variables endpoint.
 				This dictionary should be the return value of Parser.Variables().
 
 		Raises:
