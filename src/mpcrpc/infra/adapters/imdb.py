@@ -1,5 +1,6 @@
+from mpcrpc.infra.adapters import SearchResult, QueryResult
 from mpcrpc.infra import HttpClient
-from mpcrpc.utils import Filename
+from mpcrpc.utils import MediaFile
 import urllib.parse, json
 from typing import Any
 
@@ -25,9 +26,9 @@ class IMDB:
 			}
 		)
 
-	async def Search(self, filename: Filename) -> dict[str, str] | None:
+	async def Search(self, m_file: MediaFile) -> SearchResult | None:
 		"""
-		Searches a title from IMDB.
+		Search a title from IMDB.
 
 		GET https://api.imdbapi.dev/search/titles?query=
 
@@ -36,24 +37,24 @@ class IMDB:
 			maybe i'll change this on future.
 
 		Args:
-			filename (Filename):
-				The file parsed Filename object.
+			m_file (MediaFile):
+				A parsed file object.
 
 		Returns:
-			dict:
-				A dictionary containing the resulting
-				media id and type.
+			SearchResult:
+				A data class containing the search result.
+			
 			None:
-				If the search returns no results.
+				If the search results on nothing.
 		"""
 
-		# if a movie filename has its year,
+		# if the media file has its year,
 		# use it to do a better query.
 		# TODO: make a safety check of year + 1 and year - 1
 		# when the filename title + year returns nothing.
-		if filename.type == "movie" and getattr(filename, "year", None):
+		if m_file.type == "movie" and getattr(m_file, "year", None):
 
-			query_string: str = f"{filename.title} {filename.year}"
+			query_string: str = f"{m_file.title} {m_file.year}"
 
 			response: str = await self._client.get(
 				IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(query_string)}&limit=1"
@@ -69,18 +70,15 @@ class IMDB:
 		if response == "{}":
 			return None
 
-		j_resp: Any = json.loads(response)
+		s_data: dict[str, str] = json.loads(response).get("titles")[0]
 
-		# did this to keep a standard between
-		# adapters, maybe there's a better solution.
-		_type: str = j_resp.get("titles")[0].get("type").replace("tvSeries", "series")
-
-		return {
-			"type": _type,
-			"id": j_resp.get("titles")[0].get("id")
-		}
+		return SearchResult(
+			# Made this replacement to keep a standard between adapters.
+			type = s_data.get("type").replace("tvSeries", "series"),
+			id = s_data.get("id")
+		)
 	
-	async def Query(self, search_r: dict[str, str]) -> dict[str, str]:
+	async def Query(self, search_r: SearchResult) -> QueryResult:
 		"""
 		Queries a title details from its id.
 
@@ -101,15 +99,15 @@ class IMDB:
 		"""
 
 		response: str = await self._client.get(
-			IMDB.BASE_URL + f"/titles/{search_r["id"]}"
+			IMDB.BASE_URL + f"/titles/{search_r.id}"
 		)
 
-		j_resp: Any = json.loads(response)
+		s_data: Any = json.loads(response)
 
-		return {
-			"director": j_resp.get("directors")[0].get("displayName"),
-			"poster": j_resp.get("primaryImage").get("url"),
+		return QueryResult(
+			director = s_data.get("directors")[0].get("displayName"),
+			poster = s_data.get("primaryImage").get("url"),
 			# Give preference to original titles.
-			"title": j_resp.get("originalTitle") or j_resp.get("primaryTitle"),
-			"year": j_resp.get("startYear")
-		}
+			title = s_data.get("originalTitle") or s_data.get("primaryTitle"),
+			year = s_data.get("startYear")
+		)
