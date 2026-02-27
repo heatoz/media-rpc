@@ -1,0 +1,49 @@
+class SearchResult:
+    """
+    Represents the result of a Search operation.
+    """
+
+    def __init__(self, _id: str, _type: str) -> None:
+        """
+        Initialize a SearchResult object.
+
+        Attributes:
+            type (str):
+                The type of the media that was
+                queried by the search operation.
+
+            id (str):
+                The id of the media that was
+                queried by the search operation.
+        """
+
+        self.type: str = _type
+        self.id: str = _id
+
+class QueryResult:
+    """
+    Represents the result of a Query operation.
+    """
+    
+    def __init__(self, director: str, poster: str, title: str, year: str) -> None:
+        """
+        Initialize a QueryResult object.
+
+        Attributes:
+            director (str):
+                The media director.
+            
+            poster (str):
+                The media poster url.
+
+            title (str):
+                The media title.
+            
+            year (str):
+                The media release year.
+        """
+
+        self.director: str = director
+        self.poster: str = poster
+        self.title: str = title
+        self.year: str = year
