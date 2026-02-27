@@ -3,7 +3,7 @@ class SearchResult:
     Represents the result of a Search operation.
     """
 
-    def __init__(self, _id: str, _type: str) -> None:
+    def __init__(self, id: str, type: str) -> None:
         """
         Initialize a SearchResult object.
 
@@ -17,8 +17,8 @@ class SearchResult:
                 queried by the search operation.
         """
 
-        self.type: str = _type
-        self.id: str = _id
+        self.type: str = type
+        self.id: str = id
 
 class QueryResult:
     """
