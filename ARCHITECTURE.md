@@ -19,8 +19,6 @@ graph LR
     
     PlaybackFileUpdated -->|Subscribes| MediaService
     
-    PlaybackFileUpdated -->|Subscribes| RpcService
-
     MediaService -->|Publishes| MediaParsed
     
     PlaybackSessionUpdated -->|Subscribes| RpcService
