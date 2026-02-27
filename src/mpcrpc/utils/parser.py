@@ -70,7 +70,7 @@ class MediaFile:
 				The file to be parsed filename.
 		"""
 
-		m_file = MediaFile()
+		m_file: MediaFile = MediaFile()
 
 		# sadly couldn't type annotate this :(
 		matches = guessit(filename)
