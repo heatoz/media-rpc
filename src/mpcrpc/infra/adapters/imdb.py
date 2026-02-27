@@ -41,22 +41,25 @@ class IMDB:
 
 		Returns:
 			dict:
-				Returns the search result id
-				and its type.
+				A dictionary containing the resulting
+				media id and type.
 			None:
 				If the search returns no results.
 		"""
 
-		if filename.type == "movie":
+		# if a movie filename has its year,
+		# use it to do a better query.
+		# TODO: make a safety check of year + 1 and year - 1
+		# when the filename title + year returns nothing.
+		if filename.type == "movie" and getattr(filename, "year", None):
 
-			if filename.year:
+			query_string: str = f"{filename.title} {filename.year}"
 
-				query_string: str = f"{filename.title} {filename.year}"
+			response: str = await self._client.get(
+				IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(query_string)}&limit=1"
+			)
 
-				response: str = await self._client.get(
-					IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(query_string)}&limit=1"
-				)
-
+		# this will catch movies without a year and series.
 		else:
 
 			response: str = await self._client.get(
@@ -106,6 +109,7 @@ class IMDB:
 		return {
 			"director": j_resp.get("directors")[0].get("displayName"),
 			"poster": j_resp.get("primaryImage").get("url"),
-			"title": j_resp.get("originalTitle"),
+			# Give preference to original titles.
+			"title": j_resp.get("originalTitle") or j_resp.get("primaryTitle"),
 			"year": j_resp.get("startYear")
 		}
