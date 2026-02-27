@@ -1,7 +1,24 @@
-from mpcrpc.core.models import PlaybackSession, PlaybackFile, PlaybackState
-from mpcrpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
-from mpcrpc.infra import HttpClient, EventBus
-from mpcrpc.utils import Cache, Regex
+from mpcrpc.core.models import (
+	PlaybackSession,
+	PlaybackFile,
+	PlaybackState
+)
+
+from mpcrpc.core.events import (
+	PlaybackSessionUpdated,
+	PlaybackFileUpdated
+)
+
+from mpcrpc.infra import (
+	HttpClient,
+	EventBus
+)
+
+from mpcrpc.utils import (
+	Cache,
+	Regex
+)
+
 import time
 
 class MPC:
@@ -41,7 +58,6 @@ class MPC:
 		p_file: PlaybackFile = PlaybackFile(p_data)
 
 		c_session: PlaybackSession | None = self._cache.get("c_session")
-		# cached session timestamp, needed for the seek calculation.
 		c_session_ts: float | None = self._cache.get("c_session_ts")
 		c_file: PlaybackFile | None = self._cache.get("c_file")
 
@@ -52,10 +68,8 @@ class MPC:
 
 		# Determines whether a seek occurred by comparing the actual playback
 		# position against the expected position based on real elapsed time.
-		# A deviation above SEEK_THRESHOLD_MS (below MPC-HC's 5s seek step)
+		# A deviation above 3000 (thresold below MPC-HC's 5s seek step)
 		# indicates a seek; backward movement is always treated as one.
-		SEEK_THRESHOLD_MS = 3000
-
 		p_pos_seeked = (
 			c_session is not None
 			and c_session_ts is not None
@@ -63,7 +77,7 @@ class MPC:
 			and (
 				p_session.pos < c_session.pos
 				# This formula returns the position the player should be at if playing normally.
-				or abs(p_session.pos - (c_session.pos + (time.monotonic() - c_session_ts) * 1000)) > SEEK_THRESHOLD_MS
+				or abs(p_session.pos - (c_session.pos + (time.monotonic() - c_session_ts) * 1000)) > 3000
 			)
 		)
 
@@ -82,6 +96,7 @@ class MPC:
 		# then update cache and publish event.
 		if not c_session_exists or p_pos_seeked or p_state_changed:
 			
+			# cached session timestamp, needed for the seek calculation.
 			self._cache.put("c_session_ts", time.monotonic())
 			self._cache.put("c_session", p_session)
 

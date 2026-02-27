@@ -1,9 +1,22 @@
-from mpcrpc.core.events import PlaybackFileUpdated, PlaybackSessionUpdated, MediaParsed
-from mpcrpc.core.models import PlaybackSession, PlaybackState, Movie, Series
+from mpcrpc.core.events import (
+	PlaybackFileUpdated,
+	PlaybackSessionUpdated,
+	MediaParsed
+)
+
+from mpcrpc.core.models import (
+	PlaybackSession,
+	PlaybackState,
+	Movie,
+	Series
+)
+
 from pypresence.types import ActivityType
 from pypresence import AioPresence
+
 from mpcrpc.infra import EventBus
 from mpcrpc.utils import Cache
+
 import time
 
 class RPC:
