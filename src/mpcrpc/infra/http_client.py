@@ -1,4 +1,4 @@
-import aiohttp
+from aiohttp import ClientSession, ClientResponse
 
 class HttpClient:
 	"""
@@ -24,7 +24,7 @@ class HttpClient:
 				used for all HTTP requests.
 		"""
 
-		self.session: aiohttp.ClientSession = aiohttp.ClientSession(
+		self.session: ClientSession = ClientSession(
 			headers = headers,
 			cookies = cookies
 		)
@@ -42,7 +42,7 @@ class HttpClient:
 				The request response on text.
 		"""
 
-		r: aiohttp.ClientResponse = await self.session.get(
+		r: ClientResponse = await self.session.get(
 			path
 		)
 
@@ -64,7 +64,7 @@ class HttpClient:
 				The request response on text.
 		"""
 
-		r: aiohttp.ClientResponse = await self.session.post(
+		r: ClientResponse = await self.session.post(
 			path,
 			data=data
 		)
