@@ -84,7 +84,7 @@ class RPC:
 		# Made to avoid sending faulty presence
 		# on the first events.
 		if c_media:
-			
+
 			await self.Update(p_session, c_media)
 			
 
@@ -113,6 +113,7 @@ class RPC:
 			
 			await self.Update(c_session, media)
 
+
 	async def Update(self, p_session: PlaybackSession, media: Movie | Series) -> None:
 		"""
 		Updates Discord rich presence.
@@ -131,6 +132,9 @@ class RPC:
 		"""
 
 		if p_session.state == PlaybackState.EMPTY:
+			
+			self._cache.put("c_session", None)
+			self._cache.put("c_media", None)
 
 			await self._rpc.clear()
 
@@ -142,7 +146,7 @@ class RPC:
 					name = media.title,
 					state = f"{media.director}, {media.year}",
 					large_image = media.poster,
-					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/paused.png",
+					small_image = "",
 					small_text = "Paused"
 				)
 
@@ -152,7 +156,7 @@ class RPC:
 					name = media.title,
 					state = f"Episode {media.episode}, Season {media.season}",
 					large_image = media.poster,
-					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/paused.png",
+					small_image = "",
 					small_text = "Paused"
 				)        
 
@@ -170,7 +174,7 @@ class RPC:
 					name = media.title,
 					state = f"{media.director}, {media.year}",
 					large_image = media.poster,
-					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/playing.png",
+					small_image = "",
 					small_text = "Playing"
 				)
 
@@ -182,6 +186,6 @@ class RPC:
 					name = media.title,
 					state = f"Episode {media.episode}, Season {media.season}",
 					large_image = media.poster,
-					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/playing.png",
+					small_image = "",
 					small_text = "Playing"
 				)
