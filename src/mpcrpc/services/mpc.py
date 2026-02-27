@@ -1,35 +1,26 @@
-from mpcrpc.core.models import PlaybackSession, PlaybackFile
+from mpcrpc.core.models import PlaybackSession, PlaybackFile, PlaybackState
 from mpcrpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
 from mpcrpc.infra import HttpClient, EventBus
 from mpcrpc.utils import Cache, Regex
+import time
 
 class MPC:
 	"""
 	Client interface for interacting with an MPC HTTP instance.
 	"""
 
-	def __init__(self, event_bus: EventBus, poll_interval: int, port: int = 13579) -> None:
+	def __init__(self, event_bus: EventBus, port: int = 13579) -> None:
 		"""
 		Initialize the MPC client.
-
-		Note:
-			Currently, a poll_interval variable is necessary
-			to have a idea of when the user seeked, so we can
-			stay without sending events when still synced.
 
 		Args:
 			event_bus (EventBus):
 				The Event Bus used by the service.
 
-			poll_interval (int):
-				The polling loop interval on miliseconds,
-				needed for the calculation of PlaybackSessionUpdated.
-
 			port (int):
 				Port where the MPC web interface is running.
 		"""
 
-		self._poll_interval: int = poll_interval
 		self._client: HttpClient = HttpClient()
 		self._event_bus: EventBus = event_bus
 		self._cache: Cache = Cache()
@@ -46,11 +37,12 @@ class MPC:
 		)
 
 		p_data: dict = Regex.Variables(response)
-
 		p_session: PlaybackSession = PlaybackSession(p_data)
 		p_file: PlaybackFile = PlaybackFile(p_data)
 
 		c_session: PlaybackSession | None = self._cache.get("c_session")
+		# cached session timestamp, needed for the seek calculation.
+		c_session_ts: float | None = self._cache.get("c_session_ts")
 		c_file: PlaybackFile | None = self._cache.get("c_file")
 
 		# Checks if there is a previous session cached.
@@ -58,20 +50,25 @@ class MPC:
 			c_session is not None
 		)
 
-		# Checks if the playback position has
-		# jumped forward more than the poll interval
-		# plus a tolerance of 1500 ms, or if 
-		# the playback position got seeked back.
+		# Determines whether a seek occurred by comparing the actual playback
+		# position against the expected position based on real elapsed time.
+		# A deviation above SEEK_THRESHOLD_MS (below MPC-HC's 5s seek step)
+		# indicates a seek; backward movement is always treated as one.
+		SEEK_THRESHOLD_MS = 3000
+
 		p_pos_seeked = (
 			c_session is not None
+			and c_session_ts is not None
+			and p_session.state == PlaybackState.PLAYING
 			and (
-				p_session.pos - c_session.pos >= self._poll_interval + 1500
-				or p_session.pos < c_session.pos		
+				p_session.pos < c_session.pos
+				# This formula returns the position the player should be at if playing normally.
+				or abs(p_session.pos - (c_session.pos + (time.monotonic() - c_session_ts) * 1000)) > SEEK_THRESHOLD_MS
 			)
 		)
 
 		# Checks if the state of the session
-		# (playing/paused/etc) has changed.
+		# (playing/paused/empty) has changed.
 		p_state_changed = (
 			c_session is not None
 			and (
@@ -85,7 +82,7 @@ class MPC:
 		# then update cache and publish event.
 		if not c_session_exists or p_pos_seeked or p_state_changed:
 			
-			# idk of the atomicity of this, too lazy to test :p
+			self._cache.put("c_session_ts", time.monotonic())
 			self._cache.put("c_session", p_session)
 
 			return await self._event_bus.publish(
