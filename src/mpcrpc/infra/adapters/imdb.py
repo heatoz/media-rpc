@@ -62,14 +62,16 @@ class IMDB:
 			query_string: str = f"{m_file.title} {m_file.year}"
 
 			response: str = await self._client.get(
-				IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(query_string)}&limit=1"
+				IMDB.BASE_URL
+				+ f"/search/titles?query={urllib.parse.quote(query_string)}&limit=1"
 			)
 
 		# this will catch movies without a year and series.
 		else:
 
 			response: str = await self._client.get(
-				IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(m_file.title)}&limit=1"
+				IMDB.BASE_URL
+				+ f"/search/titles?query={urllib.parse.quote(m_file.title)}&limit=1"
 			)
 
 		if response == "{}":
@@ -104,7 +106,8 @@ class IMDB:
 		"""
 
 		response: str = await self._client.get(
-			IMDB.BASE_URL + f"/titles/{search_r.id}"
+			IMDB.BASE_URL
+			+ f"/titles/{search_r.id}"
 		)
 
 		s_data: Any = json.loads(response)
