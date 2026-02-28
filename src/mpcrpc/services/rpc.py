@@ -98,9 +98,11 @@ class RPC:
 				the PlaybackFile as p_file.
 		"""
 
-		self._cache.put("c_media", None)
+		if self._cache.get("c_media"):
 
-		await self._rpc.clear()
+			self._cache.put("c_media", None)
+
+			await self._rpc.clear()
 
 	async def HandleSessionUpdated(self, event: PlaybackSessionUpdated) -> None:
 		"""
