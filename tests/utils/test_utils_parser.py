@@ -1,4 +1,4 @@
-from mpcrpc.utils import Regex, Filename
+from mpcrpc.utils import Regex
 from mpcrpc.infra import HttpClient
 from typing import Dict
 import asyncio
