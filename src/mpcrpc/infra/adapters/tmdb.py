@@ -52,27 +52,20 @@ class TMDB:
 				If the search results on nothing.
 		"""
 
-		if m_file.type == "movie" and getattr(m_file, "year", None):
+		# it wasn't possible to do a title + year more
+		# detailed check on tmdb because its search doesn't
+		# support it. Idk of any solution.
+		response: str = await self._client.get(
+			TMDB.BASE_URL
+			+ f"/search/multi?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
+		)
 
-			query_string: str = f"{m_file.title} {m_file.year}"
-			
-			response: str = await self._client.get(
-				TMDB.BASE_URL
-				+ f"/search/multi?query={urllib.parse.quote(query_string)}&include_adult=true&language=en-US&page=1"
-			)
-
-		# this catch series and movie files without a year
-		else:
-			
-			response: str = await self._client.get(
-				TMDB.BASE_URL
-				+ f"/search/multi?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
-			)
-
-		if response == "{}":
-			return None
-		
 		j_resp: Any = json.loads(response)
+
+		# here this check needs to happen after json loading
+		# the response because tmdb doesn't return just a empty {}.
+		if j_resp.get("total_results") == 0:
+			return None
 
 		# made this to keep a standard
 		# between adapters.
