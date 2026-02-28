@@ -36,7 +36,7 @@ class TMDB:
 			headers={"Accept": "application/json", "Authorization": f"Bearer {token}"}
 		)
 
-	async def Search(self, m_file: MediaFile) -> SearchResult:
+	async def Search(self, m_file: MediaFile) -> SearchResult | None:
 		"""
 		Search a title from TMDB.
 
@@ -54,7 +54,7 @@ class TMDB:
 
 		if m_file.type == "movie" and getattr(m_file, "year", None):
 
-			query_string: str = f"{m_file.title}, {m_file.year}"
+			query_string: str = f"{m_file.title} {m_file.year}"
 			
 			response: str = await self._client.get(
 				TMDB.BASE_URL
