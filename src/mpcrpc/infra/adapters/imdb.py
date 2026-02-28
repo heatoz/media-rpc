@@ -69,7 +69,7 @@ class IMDB:
 		else:
 
 			response: str = await self._client.get(
-				IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(filename.title)}&limit=1"
+				IMDB.BASE_URL + f"/search/titles?query={urllib.parse.quote(m_file.title)}&limit=1"
 			)
 
 		if response == "{}":
