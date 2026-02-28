@@ -104,9 +104,8 @@ class MPC:
 				PlaybackSessionUpdated(p_session)
 			)
 
-		# checks if a cached PlaybackFile exists,
-		# if it exists, check if the current
-		# is equal to the cached one,
+		# If there is no previous cached file, or
+		# the current file name differs from the cached one,
 		# then update cache and publish event.
 		if not c_file or c_file.name != p_file.name:
 
