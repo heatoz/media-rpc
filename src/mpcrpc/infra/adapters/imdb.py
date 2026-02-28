@@ -96,8 +96,8 @@ class IMDB:
 			maybe i'll change this on future.
 
 		Args:
-			mid (str):
-				The media id.
+			search_r (SearchResult):
+				The search result.
 		
 		Returns:
 			dict:
