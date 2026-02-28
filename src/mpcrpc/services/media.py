@@ -90,13 +90,12 @@ class Media:
 
 		if search_r:
 
-			# Makes a detailed query using the id returned
-			# by the search. Made the Media type checks
-			# use this value instead of the m_file because
-			# sometimes guessit does a wrong match.
 			query_r: QueryResult = await self.adapter.Query(search_r)
 
-			if search_r.type == "series":
+			# decided to check types using the m_file
+			# because it ensures we'll not fall for
+			# the adapter wrong search results.
+			if m_file.type == "episode":
 
 				# Safely get episode and season attributes from the
 				# playback file since that's the only way to get them.
@@ -118,7 +117,7 @@ class Media:
 					)
 				)
 
-			if search_r.type == "movie":
+			if m_file.type == "movie":
 
 				await self._event_bus.publish(
 					MediaParsed(
