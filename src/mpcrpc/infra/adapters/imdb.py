@@ -100,7 +100,7 @@ class IMDB:
 				The search result.
 		
 		Returns:
-			dict:
+			QueryResult:
 				Contains the necessary title data
 				for initializing a Movie or Series object.
 		"""
