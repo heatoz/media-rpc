@@ -107,11 +107,12 @@ class TMDB:
 			None,
 		)
 
+		# this tag differs on movies and series.
+		year = j_resp.get("release_date").split("-")[0] or j_resp.get("first_air_date").split("-")[0]
+
 		return QueryResult(
 			director = director,
 			poster = TMDB.IMAGE_URL + j_resp.get("poster_path"),
 			title = j_resp.get("original_title"),
-			# needed because TMDB api release date format is,
-			# for example, "release_date": "1969-02-12"
-			year = j_resp.get("release_date").split("-")[0],
+			year = year
 		)
