@@ -215,9 +215,7 @@ class RPC:
 					end = end,
 					name = media.title,
 					state = f"{media.director}, {media.year}",
-					large_image = media.poster,
-					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/playing.png",
-					small_text = "Playing"
+					large_image = media.poster
 				)
 
 			if isinstance(media, Series):
@@ -227,7 +225,5 @@ class RPC:
 					end = end,
 					name = media.title,
 					state = f"Episode {media.episode}, Season {media.season}",
-					large_image = media.poster,
-					small_image = "https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/playing.png",
-					small_text = "Playing"
+					large_image = media.poster
 				)
