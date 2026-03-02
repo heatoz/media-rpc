@@ -74,6 +74,10 @@ jobs:
         run: >
           poetry run pyinstaller
           --onefile
+          --collect-data babelfish
+          --collect-data guessit
+          --collect-submodules babelfish
+          --collect-submodules guessit
           --name mpc-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
           src/mpcrpc/cli.py
 
