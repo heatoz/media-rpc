@@ -85,44 +85,44 @@ jobs:
           name: mpc-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
           path: mpcrpc/dist/*.exe
 
-release:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  release:
+      needs: build
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist
-          merge-multiple: true
+        - name: Download artifacts
+          uses: actions/download-artifact@v4
+          with:
+            path: dist
+            merge-multiple: true
 
-      - name: Get version
-        id: version
-        run: |
-          echo "new=$(grep '^version' pyproject.toml | head -1 | sed 's/version = \"//;s/\"//')" >> $GITHUB_OUTPUT
+        - name: Get version
+          id: version
+          run: |
+            echo "new=$(grep '^version' pyproject.toml | head -1 | sed 's/version = \"//;s/\"//')" >> $GITHUB_OUTPUT
 
-      - name: Get changelog
-        id: changelog
-        run: |
-          LOG=$(git log --oneline -15 --no-decorate)
-          echo "log<<EOF" >> $GITHUB_OUTPUT
-          echo "$LOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+        - name: Get changelog
+          id: changelog
+          run: |
+            LOG=$(git log --oneline -15 --no-decorate)
+            echo "log<<EOF" >> $GITHUB_OUTPUT
+            echo "$LOG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.version.outputs.new }}
-          name: v${{ steps.version.outputs.new }}
-          body: |
-            ## Changelog
-```
-            ${{ steps.changelog.log }}
-```
-          files: dist/*.exe
+        - name: Create release
+          uses: softprops/action-gh-release@v2
+          with:
+            tag_name: v${{ steps.version.outputs.new }}
+            name: v${{ steps.version.outputs.new }}
+            body: |
+              ## Changelog
+  ```
+              ${{ steps.changelog.log }}
+  ```
+            files: dist/*.exe
