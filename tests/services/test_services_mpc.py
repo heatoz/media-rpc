@@ -1,17 +1,8 @@
-from mpcrpc.core.models import (
-    PlaybackState
-)
+from mpcrpc.core.models import PlaybackState
 
-from mpcrpc.core.events import (
-    PlaybackSessionUpdated,
-    PlaybackFileUpdated
-)
+from mpcrpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
 
-from unittest.mock import (
-    AsyncMock,
-    MagicMock,
-    patch
-)
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from mpcrpc.infra import EventBus
 from mpcrpc.services import MPC
@@ -21,6 +12,7 @@ import pytest
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_variables_html(
     file: str = "movie.mkv",
@@ -42,12 +34,18 @@ def make_p_data(
     position: int = 10000,
     duration: int = 4630005,
 ) -> dict:
-    return {"file": file, "state": str(state), "position": str(position), "duration": str(duration)}
+    return {
+        "file": file,
+        "state": str(state),
+        "position": str(position),
+        "duration": str(duration),
+    }
 
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def event_bus():
@@ -67,6 +65,7 @@ def mpc(event_bus):
 # ---------------------------------------------------------------------------
 # Helpers: call_variables and warm_up
 # ---------------------------------------------------------------------------
+
 
 async def call_variables(mpc_instance, p_data: dict):
     """
@@ -113,6 +112,7 @@ async def warm_up(mpc_instance, event_bus, p_data: dict, ts: float = 100.0):
 # 1. First call — no cache — should always publish PlaybackSessionUpdated
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_first_call_publishes_session_updated(mpc, event_bus):
     await call_variables(mpc, make_p_data())
@@ -127,6 +127,7 @@ async def test_first_call_publishes_session_updated(mpc, event_bus):
 # ---------------------------------------------------------------------------
 # 2. No change between polls — nothing published
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_no_change_publishes_nothing(mpc, event_bus):
@@ -144,6 +145,7 @@ async def test_no_change_publishes_nothing(mpc, event_bus):
 # 3. State change (playing → paused) — should publish PlaybackSessionUpdated
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_state_change_publishes_session_updated(mpc, event_bus):
     await warm_up(mpc, event_bus, make_p_data(state=2, position=10000))
@@ -159,6 +161,7 @@ async def test_state_change_publishes_session_updated(mpc, event_bus):
 # ---------------------------------------------------------------------------
 # 4. Forward seek (large position jump) — should publish PlaybackSessionUpdated
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_forward_seek_publishes_session_updated(mpc, event_bus):
@@ -176,6 +179,7 @@ async def test_forward_seek_publishes_session_updated(mpc, event_bus):
 # 5. Backward seek — should publish PlaybackSessionUpdated
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_backward_seek_publishes_session_updated(mpc, event_bus):
     await warm_up(mpc, event_bus, make_p_data(position=60000), ts=100.0)
@@ -191,9 +195,12 @@ async def test_backward_seek_publishes_session_updated(mpc, event_bus):
 # 6. File change — should publish PlaybackFileUpdated
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_file_change_publishes_file_updated(mpc, event_bus):
-    await warm_up(mpc, event_bus, make_p_data(file="movie_a.mkv", position=10000), ts=100.0)
+    await warm_up(
+        mpc, event_bus, make_p_data(file="movie_a.mkv", position=10000), ts=100.0
+    )
 
     # Same state, position naturally advanced, but different file
     with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
@@ -208,6 +215,7 @@ async def test_file_change_publishes_file_updated(mpc, event_bus):
 # ---------------------------------------------------------------------------
 # 7. Seek takes priority over file check — only SessionUpdated published
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_seek_takes_priority_over_file_change(mpc, event_bus):
@@ -229,6 +237,7 @@ async def test_seek_takes_priority_over_file_change(mpc, event_bus):
 # 8. Seek detection is skipped when player is paused
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_seek_not_detected_when_paused(mpc, event_bus):
     """
@@ -248,6 +257,7 @@ async def test_seek_not_detected_when_paused(mpc, event_bus):
 # 9. Cache is updated after session event
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_cache_updated_after_session_event(mpc, event_bus):
     await call_variables(mpc, make_p_data(position=5000))
@@ -261,6 +271,7 @@ async def test_cache_updated_after_session_event(mpc, event_bus):
 # ---------------------------------------------------------------------------
 # 10. Cache is updated after file event
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_cache_updated_after_file_event(mpc, event_bus):
@@ -277,6 +288,7 @@ async def test_cache_updated_after_file_event(mpc, event_bus):
 # ---------------------------------------------------------------------------
 # 11. Position within natural drift threshold is NOT treated as a seek
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_position_within_threshold_not_a_seek(mpc, event_bus):
@@ -298,6 +310,7 @@ async def test_position_within_threshold_not_a_seek(mpc, event_bus):
 # 12. Position drift exactly at threshold boundary (3000ms) is NOT a seek
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_position_at_threshold_boundary_not_a_seek(mpc, event_bus):
     """
@@ -315,6 +328,7 @@ async def test_position_at_threshold_boundary_not_a_seek(mpc, event_bus):
 # ---------------------------------------------------------------------------
 # 13. Position drift just above threshold (3001ms) IS a seek
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_position_just_above_threshold_is_a_seek(mpc, event_bus):

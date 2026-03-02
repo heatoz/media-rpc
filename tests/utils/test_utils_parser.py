@@ -20,7 +20,7 @@ VARIABLES_HTML = (
     '<p id="durationstring">01:17:10</p>'
     '<p id="volumelevel">70</p>'
     '<p id="muted">0</p>'
-    '</body></html>'
+    "</body></html>"
 )
 
 
@@ -28,8 +28,8 @@ VARIABLES_HTML = (
 # Regex.Variables
 # ===========================================================================
 
-class TestRegexVariables:
 
+class TestRegexVariables:
     def test_extracts_file(self):
         result = Regex.Variables(VARIABLES_HTML)
         assert result["file"] == "As.1001.Posicoes.do.Amor.1978.HDTVRip.x264-gooz.mkv"
@@ -79,8 +79,8 @@ class TestRegexVariables:
 # MediaFile.Parse — movies
 # ===========================================================================
 
-class TestMediaFileParsemovie:
 
+class TestMediaFileParsemovie:
     def test_parse_returns_media_file_instance(self):
         result = MediaFile.Parse("Alien.1979.1080p.BluRay.x264.mkv")
         assert isinstance(result, MediaFile)
@@ -126,8 +126,8 @@ class TestMediaFileParsemovie:
 # MediaFile.Parse — series / episodes
 # ===========================================================================
 
-class TestMediaFileParseSeries:
 
+class TestMediaFileParseSeries:
     def test_series_title(self):
         result = MediaFile.Parse("Breaking.Bad.S03E07.720p.mkv")
         assert result.title == "Breaking Bad"
@@ -166,8 +166,8 @@ class TestMediaFileParseSeries:
 # MediaFile.Parse — attributes are set dynamically
 # ===========================================================================
 
-class TestMediaFileParseAttributes:
 
+class TestMediaFileParseAttributes:
     def test_unknown_attribute_not_set(self):
         result = MediaFile.Parse("Alien.1979.mkv")
         assert not hasattr(result, "nonexistent_key")
