@@ -35,9 +35,9 @@ class Series:
     def __init__(
         self,
         title: str,
-        episode: str,
-        season: str,
         poster: str,
+        episode: str = None,
+        season: str = None,
         episode_title: str = None,
     ) -> None:
         """
@@ -47,21 +47,21 @@ class Series:
                 title (str):
                         The Series title.
 
-                episode (int):
-                        The Series episode.
-
-                season (int):
-                        The Series season.
-
                 poster (str):
                         A url containing the series season poster.
+
+                episode (str, optional):
+                        The Series episode.
+
+                season (str, optional):
+                        The Series season.
 
                 episode_title (str, optional):
                         The Series episode title.
         """
 
-        self.episode: int = int(episode)
-        self.season: int = int(season)
+        self.episode: str | None = episode
+        self.season: str | None = season
         self.poster: str = poster
         self.title: str = title
         self.episode_title: str | None = episode_title
