@@ -32,7 +32,7 @@ jobs:
           key: venv-${{ hashFiles('poetry.lock') }}
 
       - name: Install dependencies
-        run: poetry install --with dev
+        run: poetry install --with lint
 
       - name: Run Ruff lint
         run: poetry run ruff check .
