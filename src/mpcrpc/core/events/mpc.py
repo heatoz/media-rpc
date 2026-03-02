@@ -1,7 +1,5 @@
-from mpcrpc.core.models import (
-    PlaybackSession,
-    PlaybackFile
-)
+from mpcrpc.core.models import PlaybackSession, PlaybackFile
+
 
 class PlaybackSessionUpdated:
     """
@@ -18,6 +16,7 @@ class PlaybackSessionUpdated:
         """
 
         self.p_session: PlaybackSession = p_session
+
 
 class PlaybackFileUpdated:
     """

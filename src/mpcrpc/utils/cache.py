@@ -1,44 +1,45 @@
 from typing import Any
 
+
 class Cache:
-	"""
-	Basic in-memory cache without expiration policy.
+    """
+    Basic in-memory cache without expiration policy.
 
-	Created to keep project boundaries well delimited and preserve modularity.
-	"""
+    Created to keep project boundaries well delimited and preserve modularity.
+    """
 
-	def put(self, key: str, value: Any) -> None:
-		"""
-		Store a value in the cache under the given key.
+    def put(self, key: str, value: Any) -> None:
+        """
+        Store a value in the cache under the given key.
 
-		The value is stored as an attribute of the Cache instance.
+        The value is stored as an attribute of the Cache instance.
 
-		Args:
-			key (str):
-				The key under which the value will be stored.
-				Must be a valid Python attribute name.
-				
-			value (Any):
-				The value to be cached.
-		"""
+        Args:
+                key (str):
+                        The key under which the value will be stored.
+                        Must be a valid Python attribute name.
 
-		return setattr(self, key, value)
+                value (Any):
+                        The value to be cached.
+        """
 
-	def get(self, key: str, default: Any = None) -> Any:
-		"""
-		Retrieve a value from the cache by its key.
+        return setattr(self, key, value)
 
-		Args:
-			key (str):
-				The key associated with the cached value.
+    def get(self, key: str, default: Any = None) -> Any:
+        """
+        Retrieve a value from the cache by its key.
 
-		Returns:
-			Any:
-				The cached value associated with the given key.
+        Args:
+                key (str):
+                        The key associated with the cached value.
 
-		Raises:
-			None:
-				If the key does not exist in the cache.
-		"""
+        Returns:
+                Any:
+                        The cached value associated with the given key.
 
-		return getattr(self, key, default)
+        Raises:
+                None:
+                        If the key does not exist in the cache.
+        """
+
+        return getattr(self, key, default)

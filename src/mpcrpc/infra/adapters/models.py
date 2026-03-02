@@ -20,11 +20,12 @@ class SearchResult:
         self.type: str = type
         self.id: str = id
 
+
 class QueryResult:
     """
     Represents the result of a Query operation.
     """
-    
+
     def __init__(self, director: str, poster: str, title: str, year: str) -> None:
         """
         Initialize a QueryResult object.
@@ -32,13 +33,13 @@ class QueryResult:
         Attributes:
             director (str):
                 The media director.
-            
+
             poster (str):
                 The media poster url.
 
             title (str):
                 The media title.
-            
+
             year (str):
                 The media release year.
         """

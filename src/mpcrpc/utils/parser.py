@@ -1,111 +1,112 @@
 from guessit import guessit
 import re
 
+
 class MediaFile:
-	"""
-	Represents a parsed media file.
-	"""
+    """
+    Represents a parsed media file.
+    """
 
-	def __init__(self) -> None:
-		"""
-		Thin wrapper around guessit.
-		
-		Attributes:
-			title (str):
-				Main title of the media.
+    def __init__(self) -> None:
+        """
+        Thin wrapper around guessit.
 
-			type (str):
-				Media type as detected by guessit (e.g., "movie", "episode").
+        Attributes:
+                title (str):
+                        Main title of the media.
 
-			year (int, optional):
-				Release year of the media.
+                type (str):
+                        Media type as detected by guessit (e.g., "movie", "episode").
 
-			season (int, optional):
-				Season number (for episodic content).
+                year (int, optional):
+                        Release year of the media.
 
-			episode (int, optional):
-				Episode number (for episodic content).
+                season (int, optional):
+                        Season number (for episodic content).
 
-			episode_title (str, optional):
-				Title of the episode.
+                episode (int, optional):
+                        Episode number (for episodic content).
 
-			alternative_title (str, optional):
-				Secondary or alternative title detected in the filename.
+                episode_title (str, optional):
+                        Title of the episode.
 
-			screen_size (str, optional):
-				Video resolution (e.g., "720p", "1080p").
+                alternative_title (str, optional):
+                        Secondary or alternative title detected in the filename.
 
-			source (str, optional):
-				Source of the media (e.g., "Web", "HDTV").
+                screen_size (str, optional):
+                        Video resolution (e.g., "720p", "1080p").
 
-			other (str, optional):
-				Additional release information (e.g., "Rip").
+                source (str, optional):
+                        Source of the media (e.g., "Web", "HDTV").
 
-			video_codec (str, optional):
-				Video codec used (e.g., "H.264").
+                other (str, optional):
+                        Additional release information (e.g., "Rip").
 
-			audio_codec (str, optional):
-				Audio codec used (e.g., "AAC").
+                video_codec (str, optional):
+                        Video codec used (e.g., "H.264").
 
-			audio_channels (str, optional):
-				Audio channel configuration (e.g., "2.0").
+                audio_codec (str, optional):
+                        Audio codec used (e.g., "AAC").
 
-			release_group (str, optional):
-				Release group tag.
+                audio_channels (str, optional):
+                        Audio channel configuration (e.g., "2.0").
 
-			container (str):
-				Media container format (e.g., "mkv").
+                release_group (str, optional):
+                        Release group tag.
 
-			mimetype (str):
-				MIME type of the container (e.g., "video/x-matroska").
-		"""
+                container (str):
+                        Media container format (e.g., "mkv").
 
-	@staticmethod
-	def Parse(filename: str) -> MediaFile:
-		"""
-		Parses a raw file name into a parsed object.
+                mimetype (str):
+                        MIME type of the container (e.g., "video/x-matroska").
+        """
 
-		Args:
-			filename (str):
-				The file to be parsed filename.
-		"""
+    @staticmethod
+    def Parse(filename: str) -> MediaFile:
+        """
+        Parses a raw file name into a parsed object.
 
-		m_file: MediaFile = MediaFile()
+        Args:
+                filename (str):
+                        The file to be parsed filename.
+        """
 
-		# sadly couldn't type annotate this :(
-		matches = guessit(filename)
+        m_file: MediaFile = MediaFile()
 
-		for key, value in matches.items():
-			setattr(m_file, key, value)
-		
-		return m_file
+        # sadly couldn't type annotate this :(
+        matches = guessit(filename)
+
+        for key, value in matches.items():
+            setattr(m_file, key, value)
+
+        return m_file
+
 
 class Regex:
-	"""
-	Contains all regex data parsing logic.
+    """
+    Contains all regex data parsing logic.
 
-	Created so the MPC service models do not need
-	to be concerned with regex details.
-	"""
+    Created so the MPC service models do not need
+    to be concerned with regex details.
+    """
 
-	# MPC /variables endpoint P matcher
-	P_TAG: re.Pattern = re.compile(
-		r'<p id="(file|filedir|state|position|duration)">(.+?)</p>',
-		re.IGNORECASE
-	)
+    # MPC /variables endpoint P matcher
+    P_TAG: re.Pattern = re.compile(
+        r'<p id="(file|filedir|state|position|duration)">(.+?)</p>', re.IGNORECASE
+    )
 
-	@staticmethod
-	def Variables(raw: str) -> dict[str, str]:
-		"""
-		Parses the raw HTML returned by the Variables endpoint.
+    @staticmethod
+    def Variables(raw: str) -> dict[str, str]:
+        """
+        Parses the raw HTML returned by the Variables endpoint.
 
-		Args:
-			raw (str):
-				The raw HTML content.
+        Args:
+                raw (str):
+                        The raw HTML content.
 
-		Returns:
-			dict:
-				A dictionary containing the parsed data.
-		"""
+        Returns:
+                dict:
+                        A dictionary containing the parsed data.
+        """
 
-		return dict(Regex.P_TAG.findall(raw))
+        return dict(Regex.P_TAG.findall(raw))

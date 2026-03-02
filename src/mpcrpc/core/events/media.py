@@ -1,7 +1,5 @@
-from mpcrpc.core.models import (
-    Movie,
-    Series
-)
+from mpcrpc.core.models import Movie, Series
+
 
 class MediaParsed:
     """
@@ -16,5 +14,5 @@ class MediaParsed:
             media (Movie | Series):
                 The parsed media object.
         """
-        
+
         self.media = media
