@@ -32,7 +32,14 @@ class Series:
     Media Service data model representing a Series.
     """
 
-    def __init__(self, title: str, episode: str, season: str, poster: str) -> None:
+    def __init__(
+        self,
+        title: str,
+        episode: str,
+        season: str,
+        poster: str,
+        episode_title: str = None,
+    ) -> None:
         """
         Initialize a Series data object.
 
@@ -48,9 +55,13 @@ class Series:
 
                 poster (str):
                         A url containing the series season poster.
+
+                episode_title (str, optional):
+                        The Series episode title.
         """
 
         self.episode: int = int(episode)
         self.season: int = int(season)
         self.poster: str = poster
         self.title: str = title
+        self.episode_title: str | None = episode_title
