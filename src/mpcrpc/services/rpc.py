@@ -21,14 +21,14 @@ class RPC:
         Initialize a RPC Service object.
 
         Attributes:
-                cache (Cache):
-                        The service cache manager.
+                        cache (Cache):
+                                        The service cache manager.
 
-                event_bus (EventBus):
-                        The EventBus used by the service.
+                        event_bus (EventBus):
+                                        The EventBus used by the service.
 
-                rpc (AioPresence):
-                        The Discord rich presence manager.
+                        rpc (AioPresence):
+                                        The Discord rich presence manager.
         """
 
         self._cache: Cache = Cache()
@@ -52,13 +52,13 @@ class RPC:
         Initialize a new AioPresence object.
 
         Args:
-                client_id (int):
-                        Client id to start the presence on.
+                        client_id (int):
+                                        Client id to start the presence on.
 
         Note:
-                I know a separated method just for
-                that isn't very good, but the connect
-                method had to be awaited.
+                        I know a separated method just for
+                        that isn't very good, but the connect
+                        method had to be awaited.
         """
 
         self._rpc: AioPresence = AioPresence(client_id)
@@ -70,15 +70,15 @@ class RPC:
         PlaybackFileUpdated event handler.
 
         Note:
-                The only reason this handler is here is to
-                avoid stale presences when switching from a
-                recognized media to one that isn't recognized,
-                avoiding that only PlaybackSession gets updated.
+                        The only reason this handler is here is to
+                        avoid stale presences when switching from a
+                        recognized media to one that isn't recognized,
+                        avoiding that only PlaybackSession gets updated.
 
         Args:
-                event (PlaybackFileUpdated):
-                        The PlaybackFileUpdated event, contains
-                        the PlaybackFile as p_file.
+                        event (PlaybackFileUpdated):
+                                        The PlaybackFileUpdated event, contains
+                                        the PlaybackFile as p_file.
         """
 
         if self._cache.get("c_media"):
@@ -91,9 +91,9 @@ class RPC:
         PlaybackSessionUpdated event handler.
 
         Args:
-                event (PlaybackSessionUpdated):
-                        The PlaybackSessionUpdated event, contains
-                        the PlaybackSession as p_session.
+                        event (PlaybackSessionUpdated):
+                                        The PlaybackSessionUpdated event, contains
+                                        the PlaybackSession as p_session.
         """
 
         c_media: Movie | Series | None = self._cache.get("c_media")
@@ -115,9 +115,9 @@ class RPC:
         MediaParsed event handler.
 
         Args:
-                event (MediaParsed):
-                        The MediaParsed event, contains
-                        the Media as media.
+                        event (MediaParsed):
+                                        The MediaParsed event, contains
+                                        the Media as media.
         """
 
         c_session: PlaybackSession | None = self._cache.get("c_session")
@@ -139,16 +139,16 @@ class RPC:
         Updates Discord rich presence.
 
         Note:
-                I know this function is quite a mess due
-                to all these if conditions, but i didn't
-                find a solution to it so, it's staying there :)
+                        I know this function is quite a mess due
+                        to all these if conditions, but i didn't
+                        find a solution to it so, it's staying there :)
 
         Args:
-                p_session (PlaybackSession):
-                        PlaybackSession to be updated.
+                        p_session (PlaybackSession):
+                                        PlaybackSession to be updated.
 
-                media (Movie | Series):
-                        Media to be updated.
+                        media (Movie | Series):
+                                        Media to be updated.
         """
 
         if p_session.state == PlaybackState.EMPTY:
@@ -157,8 +157,8 @@ class RPC:
 
             await self._rpc.clear()
 
-        if p_session.state == PlaybackState.PAUSED:
-            if isinstance(media, Movie):
+        if isinstance(media, Movie):
+            if p_session.state == PlaybackState.PAUSED:
                 await self._rpc.update(
                     activity_type=ActivityType.WATCHING,
                     name=media.title,
@@ -168,39 +168,53 @@ class RPC:
                     small_text="Paused",
                 )
 
-            if isinstance(media, Series):
+            if p_session.state == PlaybackState.PLAYING:
+                now: int = int(time.mktime(time.localtime()))
+                start: int = now - p_session.pos // 1000
+                end: int = now + (p_session.dur - p_session.pos) // 1000
+
+                await self._rpc.update(
+                    activity_type=ActivityType.WATCHING,
+                    start=start,
+                    end=end,
+                    name=media.title,
+                    state=f"{media.director}, {media.year}",
+                    large_image=media.poster,
+                )
+
+        if isinstance(media, Series):
+            # pretty ugly implementation, i'll change that on future
+            parts = []
+
+            if media.episode:
+                parts.append(f"Episode {media.episode}")
+            if media.season:
+                parts.append(f"Season {media.season}")
+
+            state = ", ".join(parts) if parts else None
+
+            if p_session.state == PlaybackState.PAUSED:
                 await self._rpc.update(
                     activity_type=ActivityType.WATCHING,
                     name=media.title,
-                    state=f"Episode {media.episode}, Season {media.season}",
+                    state=state,
                     large_image=media.poster,
                     small_image="https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/paused.png",
                     small_text="Paused",
                     details=media.episode_title,
                 )
 
-        if p_session.state == PlaybackState.PLAYING:
-            now: int = int(time.mktime(time.localtime()))
-            start: int = now - p_session.pos // 1000
-            end: int = now + (p_session.dur - p_session.pos) // 1000
+            if p_session.state == PlaybackState.PLAYING:
+                now: int = int(time.mktime(time.localtime()))
+                start: int = now - p_session.pos // 1000
+                end: int = now + (p_session.dur - p_session.pos) // 1000
 
-            if isinstance(media, Movie):
                 await self._rpc.update(
                     activity_type=ActivityType.WATCHING,
                     start=start,
                     end=end,
                     name=media.title,
-                    state=f"{media.director}, {media.year}",
-                    large_image=media.poster,
-                )
-
-            if isinstance(media, Series):
-                await self._rpc.update(
-                    activity_type=ActivityType.WATCHING,
-                    start=start,
-                    end=end,
-                    name=media.title,
-                    state=f"Episode {media.episode}, Season {media.season}",
+                    state=state,
                     large_image=media.poster,
                     details=media.episode_title,
                 )
