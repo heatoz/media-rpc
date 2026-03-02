@@ -1,0 +1,124 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version field to bump"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./mpcrpc
+
+    strategy:
+      matrix:
+        arch: [x64, x86]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python (${{ matrix.arch }})
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          allow-prereleases: true
+          architecture: ${{ matrix.arch }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache virtualenv
+        uses: actions/cache@v4
+        with:
+          path: ./mpcrpc/.venv
+          key: venv-${{ matrix.arch }}-${{ hashFiles('mpcrpc/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install --with build
+
+      - name: Bump version
+        id: version
+        shell: bash
+        run: |
+          poetry version ${{ github.event.inputs.bump }}
+          echo "new=$(poetry version -s)" >> $GITHUB_OUTPUT
+
+      - name: Commit version bump
+        if: matrix.arch == 'x64'
+        shell: bash
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add pyproject.toml
+          git commit -m "chore: bump version to ${{ steps.version.outputs.new }}"
+          git push
+
+      - name: Build
+        run: >
+          poetry run pyinstaller
+          --onefile
+          --name mpc-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
+          src/mpcrpc/cli.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpc-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
+          path: mpcrpc/dist/*.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Get version
+        id: version
+        working-directory: ./mpcrpc
+        run: |
+          echo "new=$(grep '^version' pyproject.toml | head -1 | sed 's/version = \"//;s/\"//')" >> $GITHUB_OUTPUT
+
+      - name: Get changelog
+        id: changelog
+        run: |
+          LOG=$(git log --oneline -15 --no-decorate)
+          echo "log<<EOF" >> $GITHUB_OUTPUT
+          echo "$LOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.new }}
+          name: v${{ steps.version.outputs.new }}
+          body: |
+            ## Changelog
+            ```
+            ${{ steps.changelog.log }}
+            ```
+          files: dist/*.exe
