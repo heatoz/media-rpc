@@ -11,7 +11,6 @@ from mpcrpc.core.events import (
 )
 
 from mpcrpc.core.models import (
-	PlaybackFile,
 	Movie,
 	Series
 )

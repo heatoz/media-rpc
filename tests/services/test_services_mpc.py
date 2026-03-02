@@ -1,6 +1,5 @@
 from mpcrpc.core.models import (
     PlaybackSession,
-    PlaybackFile,
     PlaybackState
 )
 
@@ -19,7 +18,6 @@ from mpcrpc.infra import EventBus
 from mpcrpc.services import MPC
 
 import pytest
-import time
 
 # ---------------------------------------------------------------------------
 # Helpers

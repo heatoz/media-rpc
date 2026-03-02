@@ -1,4 +1,3 @@
-import pytest
 from mpcrpc.utils import MediaFile, Regex  # adjust path as needed
 
 

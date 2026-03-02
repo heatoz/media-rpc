@@ -2,7 +2,6 @@ from mpcrpc.infra import EventBus
 from dataclasses import dataclass
 from typing import Any
 import pytest
-import asyncio
 
 @dataclass
 class DataModel:

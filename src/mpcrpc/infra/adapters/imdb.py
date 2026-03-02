@@ -6,7 +6,9 @@ from mpcrpc.infra.adapters import (
 from mpcrpc.infra import HttpClient
 from mpcrpc.utils import MediaFile
 
-import urllib.parse, json
+import urllib.parse
+import json
+
 from typing import Any
 
 class IMDB:
