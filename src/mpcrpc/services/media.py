@@ -81,8 +81,8 @@ class Media:
                     MediaParsed(
                         Series(
                             title=query_r.title,
-                            episode=m_file.episode,
-                            season=m_file.season,
+                            episode=getattr(m_file, "episode", None),
+                            season=getattr(m_file, "season", None),
                             poster=query_r.poster,
                             episode_title=getattr(m_file, "episode_title", None),
                         )
