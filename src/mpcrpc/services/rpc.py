@@ -176,6 +176,7 @@ class RPC:
                     large_image=media.poster,
                     small_image="https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/paused.png",
                     small_text="Paused",
+                    details=media.episode_title,
                 )
 
         if p_session.state == PlaybackState.PLAYING:
@@ -201,4 +202,5 @@ class RPC:
                     name=media.title,
                     state=f"Episode {media.episode}, Season {media.season}",
                     large_image=media.poster,
+                    details=media.episode_title,
                 )
