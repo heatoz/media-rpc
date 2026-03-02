@@ -49,22 +49,20 @@ jobs:
       - name: Cache virtualenv
         uses: actions/cache@v4
         with:
-          path: ./mpcrpc/.venv
-          key: venv-${{ matrix.arch }}-${{ hashFiles('mpcrpc/poetry.lock') }}
+          path: ./.venv
+          key: venv-${{ matrix.arch }}-${{ hashFiles('poetry.lock') }}
 
       - name: Install dependencies
         run: poetry install --with build
 
       - name: Bump version
         id: version
-        shell: bash
         run: |
           poetry version ${{ github.event.inputs.bump }}
           echo "new=$(poetry version -s)" >> $GITHUB_OUTPUT
 
       - name: Commit version bump
         if: matrix.arch == 'x64'
-        shell: bash
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
@@ -83,46 +81,44 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mpc-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
-          path: mpcrpc/dist/*.exe
+          path: dist/*.exe
 
   release:
-      needs: build
-      runs-on: ubuntu-latest
-      permissions:
-        contents: write
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-        - name: Download artifacts
-          uses: actions/download-artifact@v4
-          with:
-            path: dist
-            merge-multiple: true
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
 
-        - name: Get version
-          id: version
-          run: |
-            echo "new=$(grep '^version' pyproject.toml | head -1 | sed 's/version = \"//;s/\"//')" >> $GITHUB_OUTPUT
+      - name: Get version
+        id: version
+        run: |
+          echo "new=$(grep '^version' pyproject.toml | head -1 | sed 's/version = \"//;s/\"//')" >> $GITHUB_OUTPUT
 
-        - name: Get changelog
-          id: changelog
-          run: |
-            LOG=$(git log --oneline -15 --no-decorate)
-            echo "log<<EOF" >> $GITHUB_OUTPUT
-            echo "$LOG" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+      - name: Get changelog
+        id: changelog
+        run: |
+          LOG=$(git log --oneline -15 --no-decorate)
+          echo "log<<EOF" >> $GITHUB_OUTPUT
+          echo "$LOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-        - name: Create release
-          uses: softprops/action-gh-release@v2
-          with:
-            tag_name: v${{ steps.version.outputs.new }}
-            name: v${{ steps.version.outputs.new }}
-            body: |
-              ## Changelog
-  ```
-              ${{ steps.changelog.log }}
-  ```
-            files: dist/*.exe
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.new }}
+          name: v${{ steps.version.outputs.new }}
+          body: |
+            ## Changelog
+            ${{ steps.changelog.outputs.log }}
+          files: dist/*.exe
