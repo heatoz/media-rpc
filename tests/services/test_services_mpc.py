@@ -1,5 +1,4 @@
 from mpcrpc.core.models import (
-    PlaybackSession,
     PlaybackState
 )
 
