@@ -1,4 +1,4 @@
-from mpcrpc.infra.adapters import SearchResult, QueryResult, IMDB, TMDB
+from mpcrpc.infra.adapters import QueryResult, IMDB, TMDB
 
 from mpcrpc.core.events import PlaybackFileUpdated, MediaParsed
 
