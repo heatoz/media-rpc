@@ -34,7 +34,7 @@ class TMDB:
             headers={"Accept": "application/json", "Authorization": f"Bearer {token}"}
         )
 
-    async def Search(self, m_file: MediaFile) -> SearchResult | None:
+    async def __Search(self, m_file: MediaFile) -> SearchResult | None:
         """
         Search a title from TMDB.
 
@@ -53,10 +53,16 @@ class TMDB:
         # it wasn't possible to do a title + year more
         # detailed check on tmdb because its search doesn't
         # support it. Idk of any solution.
-        response: str = await self._client.get(
-            TMDB.BASE_URL
-            + f"/search/multi?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
-        )
+        if m_file.type == "episode":
+            response: str = await self._client.get(
+                TMDB.BASE_URL
+                + f"/search/tv?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
+            )
+        else:
+            response: str = await self._client.get(
+                TMDB.BASE_URL
+                + f"/search/movie?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
+            )
 
         j_resp: Any = json.loads(response)
 
@@ -65,13 +71,9 @@ class TMDB:
         if j_resp.get("total_results") == 0:
             return None
 
-        # made this to keep a standard
-        # between adapters.
-        _type: str = j_resp.get("results")[0].get("media_type").replace("tv", "series")
+        return SearchResult(id=j_resp.get("results")[0].get("id"))
 
-        return SearchResult(type=_type, id=j_resp.get("results")[0].get("id"))
-
-    async def Query(self, search_r: SearchResult) -> QueryResult:
+    async def __Query(self, m_file: MediaFile, search_r: SearchResult) -> QueryResult:
         """
         Queries a title details from its id.
 
