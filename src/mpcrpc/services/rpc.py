@@ -110,6 +110,14 @@ class RPC:
         if c_media:
             await self.Update(p_session, c_media)
 
+        else:
+            # c_session pending since, implemented to calculate
+            # the delay time on first events when sessionupdated
+            # comes first, and since there isn't really a mediaparsed
+            # it takes a little time to get into the rpc, this fixes
+            # that.
+            self._cache.put("c_session_ps", time.time())
+
     async def HandleMediaParsed(self, event: MediaParsed) -> None:
         """
         MediaParsed event handler.
@@ -121,6 +129,7 @@ class RPC:
         """
 
         c_session: PlaybackSession | None = self._cache.get("c_session")
+        c_session_ps: float | None = self._cache.get("c_session_ps")
 
         media: Movie | Series = event.media
 
@@ -132,6 +141,15 @@ class RPC:
         # Made to avoid sending faulty presence
         # on the first events.
         if c_session:
+            # checks if c_session was pending for this mediaparsed.
+            if c_session_ps:
+                delay_ms = int((time.time() - c_session_ps) * 1000)
+                c_session.pos += delay_ms
+
+                # reset c_session pending since because
+                # the delay is already fixed.
+                self._cache.put("c_session_ps", None)
+
             await self.Update(c_session, media)
 
     async def Update(self, p_session: PlaybackSession, media: Movie | Series) -> None:
