@@ -124,7 +124,7 @@ class TMDB:
             episode_title: str = j_resp.get("original_name") or j_resp.get("name")
 
             return QueryResult(
-                title=title, season=season, poster=poster, episode_title=episode_title
+                title=title, poster=poster, episode_title=episode_title
             )
 
         if m_file.type == "movie":
