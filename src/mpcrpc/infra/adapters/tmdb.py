@@ -87,30 +87,61 @@ class TMDB:
                         for initializing a Movie or Series object.
         """
 
-        response: str = await self._client.get(
-            TMDB.BASE_URL
-            + f"/{search_r.type.replace('series', 'tv')}/{search_r.id}?append_to_response=credits&language=en-US"
-        )
+        # uses the m_file type to do checks to avoid
+        # any mismatching errors with guessit results.
+        if m_file.type == "episode":
+            j_resp: Any = json.loads(
+                await self._client.get(
+                    TMDB.BASE_URL
+                    + f"/tv/{search_r.id}?append_to_response=credits&language=en-US"
+                )
+            )
 
-        j_resp: Any = json.loads(response)
+            title: str = j_resp.get("original_name") or j_resp.get("name")
+            season: str = getattr(m_file, "season", None) or "1"
+            # this will catch the season poster
+            # instead of the default tmdb poster.
+            poster: str = TMDB.IMAGE_URL + next(
+                (
+                    season["poster_path"]
+                    for season in j_resp.get("seasons", [])
+                    if str(season["season_number"]) == season
+                ),
+                None,
+            )
 
-        # this returns the first Director from the crew.
-        director: str = next(
-            (
-                member["name"]
-                for member in j_resp.get("credits").get("crew")
-                if member["job"] == "Director"
-            ),
-            None,
-        )
+            # queries the episode to get the episode title.
+            j_resp: Any = json.loads(
+                await self._client.get(
+                    TMDB.BASE_URL
+                    + f"/tv/{search_r.id}/season/{season}/episode/{m_file.episode}"
+                )
+            )
+            episode_title: str = j_resp.get("original_name") or j_resp.get("name")
 
-        # this tag differs on movies and series.
-        year = j_resp.get("release_date") or j_resp.get("first_air_date")
+            return QueryResult(
+                title=title, season=season, poster=poster, episode_title=episode_title
+            )
 
-        return QueryResult(
-            director=director,
-            poster=TMDB.IMAGE_URL + j_resp.get("poster_path"),
-            # this tag differs on movies and series.
-            title=j_resp.get("original_title") or j_resp.get("name"),
-            year=year.split("-")[0],
-        )
+        if m_file.type == "movie":
+            j_resp: Any = json.loads(
+                await self._client.get(
+                    TMDB.BASE_URL
+                    + f"/movie/{search_r.id}?append_to_response=credits&language=en-US"
+                )
+            )
+
+            poster: str = TMDB.IMAGE_URL + j_resp.get("poster_path")
+            year: str = j_resp.get("release_date").split("-")[0]
+            title: str = j_resp.get("original_title")
+            director: str = next(
+                (
+                    member["name"]
+                    for member in j_resp.get("credits").get("crew")
+                    if member["job"] == "Director"
+                ),
+                None,
+            )
+
+            return QueryResult(director=director, poster=poster, title=title, year=year)
+
