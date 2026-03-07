@@ -58,7 +58,8 @@ class TMDB:
                 TMDB.BASE_URL
                 + f"/search/tv?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
             )
-        else:
+            
+        if m_file.type == "movie":
             response: str = await self._client.get(
                 TMDB.BASE_URL
                 + f"/search/movie?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
@@ -78,6 +79,9 @@ class TMDB:
         Queries a title details from its id.
 
         Args:
+                m_file (MediaFile):
+                    The parsed media file.
+                
                 search_r (SearchResult):
                         The search result.
 
@@ -157,7 +161,7 @@ class TMDB:
             m_file
         """
         search_r: SearchResult = self.__Search(m_file)
-        if search_r == None:
+        if search_r is None:
             return None
 
         return self.__Query(m_file, search_r)
