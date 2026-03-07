@@ -27,7 +27,7 @@ class IMDB:
 
         self._client: HttpClient = HttpClient(headers={"Accept": "application/json"})
 
-    async def Search(self, m_file: MediaFile) -> SearchResult | None:
+    async def __Search(self, m_file: MediaFile) -> SearchResult | None:
         """
         Search a title from IMDB.
 
@@ -56,30 +56,28 @@ class IMDB:
         if m_file.type == "movie" and getattr(m_file, "year", None):
             query_string: str = f"{m_file.title} {m_file.year}"
 
-            response: str = await self._client.get(
-                IMDB.BASE_URL
-                + f"/search/titles?query={urllib.parse.quote(query_string)}&limit=1"
+            j_resp: Any = json.loads(
+                await self._client.get(
+                    IMDB.BASE_URL
+                    + f"/search/titles?query={urllib.parse.quote(query_string)}&limit=1"
+                )
             )
 
         # this will catch movies without a year and series.
         else:
-            response: str = await self._client.get(
-                IMDB.BASE_URL
-                + f"/search/titles?query={urllib.parse.quote(m_file.title)}&limit=1"
+            j_resp: Any = json.loads(
+                await self._client.get(
+                    IMDB.BASE_URL
+                    + f"/search/titles?query={urllib.parse.quote(m_file.title)}&limit=1"
+                )
             )
 
-        if response == "{}":
+        if not j_resp:
             return None
 
-        s_data: dict[str, str] = json.loads(response).get("titles")[0]
+        return SearchResult(id=j_resp.get("titles")[0].get("id"))
 
-        return SearchResult(
-            # Made this replacement to keep a standard between adapters.
-            type=s_data.get("type").replace("tvSeries", "series"),
-            id=s_data.get("id"),
-        )
-
-    async def Query(self, search_r: SearchResult) -> QueryResult:
+    async def __Query(self, m_file: MediaFile, search_r: SearchResult) -> QueryResult:
         """
         Queries a title details from its id.
 
@@ -99,14 +97,56 @@ class IMDB:
                         for initializing a Movie or Series object.
         """
 
-        response: str = await self._client.get(IMDB.BASE_URL + f"/titles/{search_r.id}")
-
-        s_data: Any = json.loads(response)
-
-        return QueryResult(
-            director=s_data.get("directors")[0].get("displayName"),
-            poster=s_data.get("primaryImage").get("url"),
-            # Give preference to original titles.
-            title=s_data.get("originalTitle") or s_data.get("primaryTitle"),
-            year=s_data.get("startYear"),
+        # it's only one endpoint for both series and movies so...
+        j_resp: Any = json.loads(
+            await self._client.get(IMDB.BASE_URL + f"/titles/{search_r.id}")
         )
+
+        # sadly, api.imdbapi.dev doesn't support custom seasons posters :(
+        poster: str = j_resp.get("primaryImage").get("url")
+
+        if m_file.type == "episode":
+            # give preference to the original titles.
+            title: str = j_resp.get("originalTitle") or j_resp.get("primaryTitle")
+            season: str = getattr(m_file, "season", None) or "1"
+
+            j_resp: Any = json.loads(
+                await self._client.get(
+                    IMDB.BASE_URL + f"/titles/{search_r.id}/episodes?season={season}"
+                )
+            )
+            episode_title: str | None = next(
+                (
+                    ep["title"]
+                    for ep in j_resp.get("episodes", [])
+                    if ep["episodeNumber"] == int(m_file.episode)
+                ),
+                None,
+            )
+
+            return QueryResult(title=title, poster=poster, episode_title=episode_title)
+
+        if m_file.type == "movie":
+            # give preference to the original titles.
+            title: str = j_resp.get("originalTitle") or j_resp.get("primaryTitle")
+            director: str = j_resp.get("directors")[0].get("displayName")
+            year: str = j_resp.get("startYear")
+
+            return QueryResult(director=director, poster=poster, title=title, year=year)
+
+    async def Fetch(self, m_file: MediaFile) -> QueryResult | None:
+        """
+        Wrapper around Search and Query private methods.
+
+        Note:
+            Made only so the caller can avoid calling two
+            methods and passing m_file two times.
+
+        Args:
+            m_file
+        """
+        search_r: SearchResult = await self.__Search(m_file)
+        if search_r is None:
+            return None
+
+        return await self.__Query(m_file, search_r)
