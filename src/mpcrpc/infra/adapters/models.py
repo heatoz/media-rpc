@@ -28,8 +28,8 @@ class QueryResult:
         title: str,
         year: str | None = None,
         director: str | None = None,
-        episode_title: str | None = None
-        ) -> None:
+        episode_title: str | None = None,
+    ) -> None:
         """
         Initialize a QueryResult object.
 

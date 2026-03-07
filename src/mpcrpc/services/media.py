@@ -68,7 +68,6 @@ class Media:
         query_r: QueryResult | None = await self.adapter.Fetch(m_file)
 
         if query_r:
-
             # decided to check types using the m_file
             # because it ensures we'll not fall for
             # the adapter wrong search results.
