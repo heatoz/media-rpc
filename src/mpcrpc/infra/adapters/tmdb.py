@@ -58,7 +58,7 @@ class TMDB:
                 TMDB.BASE_URL
                 + f"/search/tv?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
             )
-            
+
         if m_file.type == "movie":
             response: str = await self._client.get(
                 TMDB.BASE_URL
@@ -81,7 +81,7 @@ class TMDB:
         Args:
                 m_file (MediaFile):
                     The parsed media file.
-                
+
                 search_r (SearchResult):
                         The search result.
 
@@ -96,23 +96,22 @@ class TMDB:
         if m_file.type == "episode":
             j_resp: Any = json.loads(
                 await self._client.get(
-                    TMDB.BASE_URL
-                    + f"/tv/{search_r.id}?append_to_response=credits&language=en-US"
+                    TMDB.BASE_URL + f"/tv/{search_r.id}&language=en-US"
                 )
             )
 
             title: str = j_resp.get("original_name") or j_resp.get("name")
             season: str = getattr(m_file, "season", None) or "1"
-            # this will catch the season poster
-            # instead of the default tmdb poster.
-            poster: str = TMDB.IMAGE_URL + next(
+            # this will give priority to the season poster
+            poster_path = next(
                 (
-                    season["poster_path"]
-                    for season in j_resp.get("seasons", [])
-                    if str(season["season_number"]) == season
+                    s["poster_path"]
+                    for s in j_resp.get("seasons", [])
+                    if s["season_number"] == int(season)
                 ),
                 None,
-            )
+            ) or j_resp.get("poster_path")
+            poster: str | None = TMDB.IMAGE_URL + poster_path if poster_path else None
 
             # queries the episode to get the episode title.
             j_resp: Any = json.loads(
@@ -123,9 +122,7 @@ class TMDB:
             )
             episode_title: str = j_resp.get("original_name") or j_resp.get("name")
 
-            return QueryResult(
-                title=title, poster=poster, episode_title=episode_title
-            )
+            return QueryResult(title=title, poster=poster, episode_title=episode_title)
 
         if m_file.type == "movie":
             j_resp: Any = json.loads(
@@ -160,8 +157,8 @@ class TMDB:
         Args:
             m_file
         """
-        search_r: SearchResult = self.__Search(m_file)
+        search_r: SearchResult = await self.__Search(m_file)
         if search_r is None:
             return None
 
-        return self.__Query(m_file, search_r)
+        return await self.__Query(m_file, search_r)
