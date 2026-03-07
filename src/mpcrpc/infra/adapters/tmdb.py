@@ -145,3 +145,19 @@ class TMDB:
 
             return QueryResult(director=director, poster=poster, title=title, year=year)
 
+    async def Fetch(self, m_file: MediaFile) -> QueryResult | None:
+        """
+        Wrapper around Search and Query private methods.
+
+        Note:
+            Made only so the caller can avoid calling two
+            methods and passing m_file two times.
+
+        Args:
+            m_file
+        """
+        search_r: SearchResult = self.__Search(m_file)
+        if search_r == None:
+            return None
+
+        return self.__Query(m_file, search_r)
