@@ -8,16 +8,12 @@ class SearchResult:
         Initialize a SearchResult object.
 
         Attributes:
-            type (str):
-                The type of the media that was
-                queried by the search operation.
 
             id (str):
                 The id of the media that was
                 queried by the search operation.
         """
 
-        self.type: str = type
         self.id: str = id
 
 
