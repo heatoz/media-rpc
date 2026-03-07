@@ -22,13 +22,18 @@ class QueryResult:
     Represents the result of a Query operation.
     """
 
-    def __init__(self, director: str, poster: str, title: str, year: str) -> None:
+    def __init__(
+        self,
+        poster: str,
+        title: str,
+        year: str | None = None,
+        director: str | None = None,
+        episode_title: str | None = None
+        ) -> None:
         """
         Initialize a QueryResult object.
 
         Attributes:
-            director (str):
-                The media director.
 
             poster (str):
                 The media poster url.
@@ -36,11 +41,18 @@ class QueryResult:
             title (str):
                 The media title.
 
-            year (str):
-                The media release year.
+            year (optional, str):
+                The media (movie) release year.
+
+            director (optional, str):
+                The media (movie) director.
+
+            episode_title (optional, str):
+                The media (series) episode title.
         """
 
-        self.director: str = director
         self.poster: str = poster
         self.title: str = title
-        self.year: str = year
+        self.year: str | None = year
+        self.director: str | None = director
+        self.episode_title: str | None = episode_title
