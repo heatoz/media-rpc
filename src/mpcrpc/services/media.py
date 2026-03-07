@@ -65,10 +65,9 @@ class Media:
         m_file: MediaFile = MediaFile.Parse(event.p_file.name)
 
         # Returns None if search finds nothing.
-        search_r: SearchResult | None = await self.adapter.Search(m_file)
+        query_r: QueryResult | None = await self.adapter.Fetch(m_file)
 
-        if search_r:
-            query_r: QueryResult = await self.adapter.Query(search_r)
+        if query_r:
 
             # decided to check types using the m_file
             # because it ensures we'll not fall for
@@ -84,7 +83,7 @@ class Media:
                             episode=getattr(m_file, "episode", None),
                             season=getattr(m_file, "season", None),
                             poster=query_r.poster,
-                            episode_title=getattr(m_file, "episode_title", None),
+                            episode_title=query_r.episode_title,
                         )
                     )
                 )
