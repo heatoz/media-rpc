@@ -1,5 +1,5 @@
 from mpcrpc.services import MPC, Media, RPC
-from mpcrpc.infra.adapters import IMDB, TMDB
+from mpcrpc.infra.adapters import IMDB, TMDB, MAL
 from mpcrpc.infra import EventBus
 
 import traceback
@@ -27,7 +27,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "-a",
         "--adapter",
         required=True,
-        choices=["imdb", "tmdb"],
+        choices=["imdb", "tmdb", "mal"],
         help="The adapter the medias are going to be parsed from",
     )
 
@@ -73,6 +73,7 @@ async def _cli() -> None:
     adapter = {
         "imdb": lambda: IMDB(),
         "tmdb": lambda: TMDB(token=args.token),
+        "mal": lambda: MAL(),
     }[args.adapter]()
 
     event_bus: EventBus = EventBus()

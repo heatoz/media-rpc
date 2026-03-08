@@ -51,6 +51,7 @@ mpc-rpc.exe --adapter imdb --port 13580
 | Adapter | Token required | Description |
 |---|---|---|
 | `imdb` | No | Fetches media metadata from IMDB |
+| `mal` | No | Fetches media metadata from MyAnimeList |
 | `tmdb` | Yes | Fetches media metadata from [The Movie Database](https://www.themoviedb.org/settings/api) |
 
 ## Architecture
