@@ -43,6 +43,9 @@ class MAL:
         """
 
         if m_file.type == "episode":
+            # All this shit is needed because for some reason,
+            # different seasons of a anime are treated as different
+            # entries on the db, so they have different ids...
             if getattr(m_file, "season", None) and int(m_file.season) > 1:
                 query: str = f"{m_file.title} Season {m_file.season}"
 
@@ -53,7 +56,7 @@ class MAL:
                     )
                 ).get("data")[0]
 
-            # this is matched for animes with only one season.
+            # this is matched by animes with only one season.
             else:
                 j_resp: Any = json.loads(
                     await self._client.get(
@@ -91,7 +94,7 @@ class MAL:
                         for initializing a Movie or Series object.
         """
 
-        # common to both
+        # common endpoint to both movies and series
         j_resp: Any = json.loads(
             await self._client.get(MAL.BASE_URL + f"/anime/{search_r.id}/full")
         ).get("data")
@@ -101,7 +104,7 @@ class MAL:
         title: str = re.sub(r" Season \d+$", "", j_resp.get("title"))
 
         if m_file.type == "episode":
-            # matches the correct page for the episode.
+            # this is needed to get the correct page on the request.
             page = (int(m_file.episode) - 1) // 100 + 1
 
             j_resp: Any = json.loads(
@@ -124,7 +127,7 @@ class MAL:
                 await self._client.get(MAL.BASE_URL + f"/anime/{search_r.id}/staff")
             ).get("data")
 
-            # fetches the first director from the list
+            # fetches the first director from the list.
             director: str | None = next(
                 (
                     p["person"]["name"]
