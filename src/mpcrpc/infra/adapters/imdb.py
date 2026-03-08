@@ -104,10 +104,10 @@ class IMDB:
 
         # sadly, api.imdbapi.dev doesn't support custom seasons posters :(
         poster: str = j_resp.get("primaryImage").get("url")
+        title: str = j_resp.get("originalTitle") or j_resp.get("primaryTitle")
 
         if m_file.type == "episode":
             # give preference to the original titles.
-            title: str = j_resp.get("originalTitle") or j_resp.get("primaryTitle")
             season: str = getattr(m_file, "season", None) or "1"
 
             j_resp: Any = json.loads(
@@ -128,7 +128,6 @@ class IMDB:
 
         if m_file.type == "movie":
             # give preference to the original titles.
-            title: str = j_resp.get("originalTitle") or j_resp.get("primaryTitle")
             director: str = j_resp.get("directors")[0].get("displayName")
             year: str = j_resp.get("startYear")
 
