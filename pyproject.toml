@@ -1,6 +1,6 @@
 [project]
 name = "mpcrpc"
-version = "0.3.1"
+version = "0.3.2"
 description = "MPC-HC event-based Discord rich presence integration"
 authors = [
     {name = "chronod",email = "klhwjm@protonmail.com"}
