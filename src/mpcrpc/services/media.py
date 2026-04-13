@@ -1,10 +1,7 @@
-from mpcrpc.infra.adapters import QueryResult, IMDB, TMDB
-
 from mpcrpc.core.events import PlaybackFileUpdated, MediaParsed
-
+from mpcrpc.infra.adapters import QueryResult
 from mpcrpc.core.models import Movie, Series
-
-from mpcrpc.utils import MediaFile
+from mpcrpc.utils import MediaFile, Image
 from mpcrpc.infra import EventBus
 
 
@@ -14,7 +11,7 @@ class Media:
     out of the MPC-HC Web Interface /variables "file" field.
     """
 
-    def __init__(self, event_bus: EventBus, adapter: IMDB | TMDB):
+    def __init__(self, event_bus: EventBus, adapter: object, uploader: object):
         """
         Initialize a Media Service object.
 
@@ -33,7 +30,13 @@ class Media:
         # Subscribes Parse() to PlaybackFileUpdated.
         self._event_bus.subscribe(PlaybackFileUpdated, self.Parse)
 
-        self.adapter: IMDB | TMDB = adapter
+        self.uploader: object = uploader
+        self.adapter: object = adapter
+
+        # initialize image processor,
+        # did this to keep a single session between
+        # processing.
+        self.image: Image = Image()
 
     async def Parse(self, event: PlaybackFileUpdated) -> None:
         """
@@ -81,7 +84,7 @@ class Media:
                             title=query_r.title,
                             episode=getattr(m_file, "episode", None),
                             season=getattr(m_file, "season", None),
-                            poster=query_r.poster,
+                            poster=await self.uploader.Upload(await self.image.Process(query_r.poster)),
                             episode_title=query_r.episode_title,
                         )
                     )
@@ -94,7 +97,7 @@ class Media:
                             title=query_r.title,
                             director=query_r.director,
                             year=query_r.year,
-                            poster=query_r.poster,
+                            poster=await self.uploader.Upload(await self.image.Process(query_r.poster)),
                         )
                     )
                 )
