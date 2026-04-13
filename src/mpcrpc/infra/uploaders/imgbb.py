@@ -34,7 +34,7 @@ class ImgBB:
         """
 
         response: str = await self._client.post(
-            "https://api.imgbb.com/1/upload",
+            "https://api.imgbb.com/1/upload?expiration=43200",
             data={
                 "key": self.token,
                 "image": base64.b64encode(image).decode(),
