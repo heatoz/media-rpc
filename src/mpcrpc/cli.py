@@ -3,12 +3,13 @@ from mpcrpc.infra.adapters import IMDB, TMDB, MAL
 from mpcrpc.services import MPC, Media, RPC
 from mpcrpc.infra import EventBus
 
+from pathlib import Path
 import traceback
 import asyncio
 import tomllib
 
 DISCORD_CLIENT_ID: int = 1411516401541185566
-CONFIG_PATH: str = "./config.toml"
+CONFIG_PATH: Path = Path("./config.toml")
 
 
 class Config:
