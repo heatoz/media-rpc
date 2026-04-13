@@ -84,7 +84,9 @@ class Media:
                             title=query_r.title,
                             episode=getattr(m_file, "episode", None),
                             season=getattr(m_file, "season", None),
-                            poster=await self.uploader.Upload(await self.image.Process(query_r.poster)),
+                            poster=await self.uploader.Upload(
+                                await self.image.Process(query_r.poster)
+                            ),
                             episode_title=query_r.episode_title,
                         )
                     )
@@ -97,7 +99,9 @@ class Media:
                             title=query_r.title,
                             director=query_r.director,
                             year=query_r.year,
-                            poster=await self.uploader.Upload(await self.image.Process(query_r.poster)),
+                            poster=await self.uploader.Upload(
+                                await self.image.Process(query_r.poster)
+                            ),
                         )
                     )
                 )

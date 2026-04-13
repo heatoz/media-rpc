@@ -2,6 +2,7 @@ from mpcrpc.infra import HttpClient
 import base64
 import json
 
+
 class ImgBB:
     """
     Adapter for the ImgBB service.

@@ -201,7 +201,6 @@ class RPC:
                 )
 
         if isinstance(media, Series):
-
             parts = []
 
             if media.season:
