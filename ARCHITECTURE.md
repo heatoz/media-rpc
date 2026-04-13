@@ -40,10 +40,14 @@ Periodically polls MPC-HC's web interface (`/variables.html`) and detects three 
 
 ### Media Service
 
-Subscribes to `PlaybackFileUpdated`. When a new file is detected, it attempts to identify the media using an **adapter**. The adapter exposes two methods:
+Subscribes to `PlaybackFileUpdated`. When a new file is detected, it attempts to identify the media using an **adapter**. The adapter exposes one public method:
 
-- `Search(filename) -> SearchResult` — identifies the media type and returns an ID.
-- `Query(id, type) -> QueryResult` — fetches metadata (title, director/episode info, poster, year) for the given ID.
+- `Fetch(MediaFile) -> QueryResult | None` — Returns media metadata for the given MediaFile.
+
+Fetch is wrapped around two private methods:
+
+- `__Search(MediaFile) -> SearchResult` — identifies the media type and ID and returns a SearchResult object.
+- `__Query(MediaFile, SearchResult) -> QueryResult` — fetches metadata (title, director/episode info, poster, year) for the SearchResult.
 
 On success, the service constructs a `Movie` or `Series` object and publishes a `MediaParsed` event.
 
