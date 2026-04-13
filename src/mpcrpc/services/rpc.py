@@ -196,20 +196,20 @@ class RPC:
                     start=start,
                     end=end,
                     name=media.title,
-                    state=f"{media.director} ({media.year})",
+                    state=f"{media.director} • {media.year}",
                     large_image=media.poster,
                 )
 
         if isinstance(media, Series):
-            # pretty ugly implementation, i'll change that on future
+
             parts = []
 
-            if media.episode:
-                parts.append(f"Episode {media.episode}")
             if media.season:
-                parts.append(f"Season {media.season}")
+                parts.append(f"S{media.season}")
+            if media.episode:
+                parts.append(f"E{media.episode}")
 
-            state = " • ".join(parts) if parts else None
+            state = "".join(parts) if parts else None
 
             if p_session.state == PlaybackState.PAUSED:
                 await self._rpc.update(
