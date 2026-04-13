@@ -46,6 +46,24 @@ class HttpClient:
 
         return await r.text(encoding="utf-8")
 
+    async def get_bytes(self, path: str) -> bytes:
+        """
+        This was only created for the image processing logic,
+        i'm lazy :)
+
+        Args:
+                path (str):
+                        The URL to send the GET request to.
+
+        Returns:
+                bytes:
+                        The request response on bytes.
+        """
+
+        r: ClientResponse = await self.session.get(path)
+
+        return await r.read()
+
     async def post(self, path: str, data: dict) -> str:
         """
         Perform a synchronous HTTP POST request with JSON-encoded data.
