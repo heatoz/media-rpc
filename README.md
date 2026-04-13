@@ -22,28 +22,26 @@ Event-based Discord Rich Presence integration for MPC-HC.
 ## Usage
 
 ```
-mpc-rpc.exe -a <adapter> [options]
+mpc-rpc.exe
 ```
 
-### Options
+## Default Configuration
 
-| Flag | Description | Default |
-|---|---|---|
-| `-p`, `--port` | MPC-HC Web Interface port | `13579` |
-| `-a`, `--adapter` | Source adapter for media metadata | required |
-| `--token` | API token (required for some adapters) | — |
+```toml
+[mpc]
+port = 13579
 
-### Example
+[adapter]
+name = "imdb"
+# name = "tmdb"
+# token = "your_token_here"
+# ...
 
-```bash
-# Using IMDB
-mpc-rpc.exe --adapter imdb
-
-# Using TMDB (requires API token)
-mpc-rpc.exe --adapter tmdb --token YOUR_TOKEN
-
-# Custom port
-mpc-rpc.exe --adapter imdb --port 13580
+[uploader]
+name = "litterbox"
+# name = "imgbb"
+# token = "your_token_here"
+# ...
 ```
 
 ## Adapters
@@ -53,6 +51,13 @@ mpc-rpc.exe --adapter imdb --port 13580
 | `imdb` | No | Fetches media metadata from IMDB |
 | `mal` | No | Fetches media metadata from MyAnimeList |
 | `tmdb` | Yes | Fetches media metadata from [The Movie Database](https://www.themoviedb.org/settings/api) |
+
+## Uploaders
+
+| Uploader | Token required | Description |
+|---|---|---|
+| `litterbox` | No | Hosts posters temporarily on [catbox.moe](https://litterbox.catbox.moe) |
+| `imgbb` | Yes | Hosts posters temporarily on [ImgBB](https://imgbb.com) |
 
 ## Architecture
 
