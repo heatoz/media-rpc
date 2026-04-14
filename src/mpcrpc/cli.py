@@ -151,7 +151,7 @@ def _build_uploader(config: Config) -> object:
     if config.uploader == "imgur":
         if not config.uploader_token:
             raise ValueError("Imgur uploader requires a token in config.toml")
-        return ImgBB(token=config.uploader_token)
+        return Imgur(token=config.uploader_token)
 
     raise ValueError(f"Unknown uploader: {config.uploader}")
 
