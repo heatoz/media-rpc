@@ -27,7 +27,8 @@ class OnlyImage:
         image_b64 = base64.b64encode(image).decode("utf-8")
 
         response = await self._client.post(
-            "https://onlyimage.org/api/1/upload", data={"image": image_b64}
+            "https://onlyimage.org/api/1/upload",
+            data={"source": image_b64, "expiration": "PT12H"},
         )
 
         return json.loads(response)["image"]["url"]
