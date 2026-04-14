@@ -1,5 +1,5 @@
 from mpcrpc.infra import HttpClient
-
+from aiohttp import FormData
 
 class Litterbox:
     """
@@ -7,10 +7,6 @@ class Litterbox:
     """
 
     def __init__(self) -> None:
-        """
-        Initialize a Litterbox uploader object.
-        """
-
         self._client: HttpClient = HttpClient()
 
     async def Upload(self, image: bytes) -> str:
@@ -20,21 +16,20 @@ class Litterbox:
         Args:
             image (bytes):
                 The image to be uploaded in bytes.
-            filename (str):
-                The filename for the uploaded image.
 
         Returns:
             str:
                 The image url.
         """
 
+        form = FormData()
+        form.add_field("reqtype", "fileupload")
+        form.add_field("time", "12h")
+        form.add_field("fileToUpload", image)
+
         response: str = await self._client.post(
             "https://litterbox.catbox.moe/resources/internals/api.php",
-            data={
-                "reqtype": "fileupload",
-                "time": "12h",
-                "fileToUpload": image,
-            },
+            data=form,
         )
 
         return response
