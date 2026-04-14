@@ -1,4 +1,4 @@
-from mpcrpc.infra.uploaders import Litterbox, ImgBB
+from mpcrpc.infra.uploaders import Litterbox, ImgBB, Imgur
 from mpcrpc.infra.adapters import IMDB, TMDB, MAL
 from mpcrpc.services import MPC, Media, RPC
 from mpcrpc.infra import EventBus
@@ -144,8 +144,15 @@ def _build_uploader(config: Config) -> object:
         if not config.uploader_token:
             raise ValueError("ImgBB uploader requires a token in config.toml")
         return ImgBB(token=config.uploader_token)
+
     if config.uploader == "litterbox":
         return Litterbox()
+
+    if config.uploader == "imgur":
+        if not config.uploader_token:
+            raise ValueError("Imgur uploader requires a token in config.toml")
+        return ImgBB(token=config.uploader_token)
+
     raise ValueError(f"Unknown uploader: {config.uploader}")
 
 
