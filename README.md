@@ -48,16 +48,18 @@ name = "litterbox"
 
 | Adapter | Token required | Description |
 |---|---|---|
-| `imdb` | No | Fetches media metadata from IMDB |
-| `mal` | No | Fetches media metadata from MyAnimeList |
+| `imdb` | No | Fetches media metadata from [IMDB](https://www.imdb.com) |
+| `mal` | No | Fetches media metadata from [MyAnimeList](https://myanimelist.net) |
 | `tmdb` | Yes | Fetches media metadata from [The Movie Database](https://www.themoviedb.org/settings/api) |
 
 ## Uploaders
 
 | Uploader | Token required | Description |
 |---|---|---|
-| `litterbox` | No | Hosts posters temporarily on [catbox.moe](https://litterbox.catbox.moe) |
+| `imgur` | Yes | Hosts posters on [Imgur](https://imgur.com) |
 | `imgbb` | Yes | Hosts posters temporarily on [ImgBB](https://imgbb.com) |
+| `litterbox` | No | Hosts posters temporarily on [Litterbox](https://litterbox.catbox.moe) |
+| `onlyimage` | Yes | Hosts posters temporarily on [OnlyImage](https://imgbb.com) |
 
 ## Architecture
 
