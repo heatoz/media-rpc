@@ -13,7 +13,7 @@ class Litterbox:
 
         self._client: HttpClient = HttpClient()
 
-    async def Upload(self, image: bytes, filename: str = "image.png") -> str:
+    async def Upload(self, image: bytes) -> str:
         """
         Uploads an image on Litterbox.
 
