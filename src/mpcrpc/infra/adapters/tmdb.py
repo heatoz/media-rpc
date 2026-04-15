@@ -166,8 +166,8 @@ class TMDB:
 
         self.m_file: MediaFile = m_file
 
-        search_r: SearchResult = await self.__search(m_file)
+        search_r: SearchResult = await self.__search()
         if search_r is None:
             return None
 
-        return await self.__query(m_file, search_r)
+        return await self.__query(search_r)
