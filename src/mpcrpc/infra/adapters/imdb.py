@@ -72,7 +72,7 @@ class IMDB:
                 )
             )
 
-        if not j_resp:
+        if not j_resp.get("titles"):
             return None
 
         return SearchResult(id=j_resp.get("titles")[0].get("id"))
