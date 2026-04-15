@@ -84,6 +84,9 @@ class MPC:
             self._cache.put("c_session_ts", time.monotonic())
             self._cache.put("c_session", p_session)
 
+            if p_session.state == PlaybackState.EMPTY:
+                self._cache.put("c_file", None)
+
             return await self._event_bus.publish(PlaybackSessionUpdated(p_session))
 
         # If there is no previous cached file, or
