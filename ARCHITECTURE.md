@@ -46,8 +46,8 @@ Subscribes to `PlaybackFileUpdated`. When a new file is detected, it attempts to
 
 Fetch is wrapped around two private methods:
 
-- `__Search(MediaFile) -> SearchResult` — identifies the media type and ID and returns a SearchResult object.
-- `__Query(MediaFile, SearchResult) -> QueryResult` — fetches metadata (title, director/episode info, poster, year) for the SearchResult.
+- `__search() -> SearchResult | None` — identifies the media ID and returns a SearchResult object.
+- `__query(SearchResult) -> QueryResult` — fetches metadata (title, director/episode info, poster, year) for the SearchResult.
 
 On success, the service constructs a `Movie` or `Series` object and publishes a `MediaParsed` event.
 
