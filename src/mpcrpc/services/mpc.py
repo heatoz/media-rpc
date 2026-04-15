@@ -87,7 +87,7 @@ class MPC:
             if p_session.state == PlaybackState.EMPTY:
                 self._cache.put("c_file", None)
 
-            return await self._event_bus.publish(PlaybackSessionUpdated(p_session))
+            await self._event_bus.publish(PlaybackSessionUpdated(p_session))
 
         # If there is no previous cached file, or
         # the current file name differs from the cached one,
@@ -95,4 +95,4 @@ class MPC:
         if not c_file or c_file.name != p_file.name:
             self._cache.put("c_file", p_file)
 
-            return await self._event_bus.publish(PlaybackFileUpdated(p_file))
+            await self._event_bus.publish(PlaybackFileUpdated(p_file))
