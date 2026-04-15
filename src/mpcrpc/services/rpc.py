@@ -180,7 +180,7 @@ class RPC:
                 await self._rpc.update(
                     activity_type=ActivityType.WATCHING,
                     name=media.title,
-                    state=f"{media.director} ({media.year})",
+                    state=f"{media.director} ∙ {media.year}",
                     large_image=media.poster,
                     small_image="https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/paused.png",
                     small_text="Paused",
@@ -196,19 +196,19 @@ class RPC:
                     start=start,
                     end=end,
                     name=media.title,
-                    state=f"{media.director} • {media.year}",
+                    state=f"{media.director} ∙ {media.year}",
                     large_image=media.poster,
                 )
 
         if isinstance(media, Series):
-            parts = []
+            parts: list = []
 
             if media.season:
-                parts.append(f"S{media.season}")
+                parts.append(f"Season {media.season}")
             if media.episode:
-                parts.append(f"E{media.episode}")
+                parts.append(f"Episode {media.episode}")
 
-            state = "".join(parts) if parts else None
+            state: str = " ∙ ".join(parts) if parts else None
 
             if p_session.state == PlaybackState.PAUSED:
                 await self._rpc.update(
