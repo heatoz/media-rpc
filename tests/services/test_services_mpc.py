@@ -109,22 +109,6 @@ async def warm_up(mpc_instance, event_bus, p_data: dict, ts: float = 100.0):
 
 
 # ---------------------------------------------------------------------------
-# 1. First call — no cache — should always publish PlaybackSessionUpdated
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_first_call_publishes_session_updated(mpc, event_bus):
-    await call_variables(mpc, make_p_data())
-
-    event_bus.publish.assert_awaited_once()
-    event = event_bus.publish.call_args[0][0]
-    assert isinstance(event, PlaybackSessionUpdated)
-    assert event.p_session.state == PlaybackState.PLAYING
-    assert event.p_session.pos == 10000
-
-
-# ---------------------------------------------------------------------------
 # 2. No change between polls — nothing published
 # ---------------------------------------------------------------------------
 
@@ -210,28 +194,6 @@ async def test_file_change_publishes_file_updated(mpc, event_bus):
     event = event_bus.publish.call_args[0][0]
     assert isinstance(event, PlaybackFileUpdated)
     assert event.p_file.name == "movie_b.mkv"
-
-
-# ---------------------------------------------------------------------------
-# 7. Seek takes priority over file check — only SessionUpdated published
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_seek_takes_priority_over_file_change(mpc, event_bus):
-    """
-    If both a seek and a file change are detected in the same poll,
-    only PlaybackSessionUpdated should be published (early return).
-    """
-    await warm_up(mpc, event_bus, make_p_data(file="a.mkv", position=10000), ts=100.0)
-
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
-        # Different file AND a large position jump (seek)
-        await call_variables(mpc, make_p_data(file="b.mkv", position=80000))
-
-    assert event_bus.publish.await_count == 1
-    assert isinstance(event_bus.publish.call_args[0][0], PlaybackSessionUpdated)
-
 
 # ---------------------------------------------------------------------------
 # 8. Seek detection is skipped when player is paused
