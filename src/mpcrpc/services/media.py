@@ -1,7 +1,7 @@
 from mpcrpc.core.events import PlaybackFileUpdated, MediaParsed
+from mpcrpc.utils import MediaFile, Image, Cache
 from mpcrpc.infra.adapters import QueryResult
 from mpcrpc.core.models import Movie, Series
-from mpcrpc.utils import MediaFile, Image
 from mpcrpc.infra import EventBus
 
 
@@ -26,6 +26,7 @@ class Media:
         """
 
         self._event_bus: EventBus = event_bus
+        self._cache: Cache = Cache()
 
         # Subscribes Parse() to PlaybackFileUpdated.
         self._event_bus.subscribe(PlaybackFileUpdated, self.Parse)
@@ -71,6 +72,20 @@ class Media:
         query_r: QueryResult | None = await self.adapter.Fetch(m_file)
 
         if query_r:
+            # cached poster
+            c_poster: dict[str, str] = self._cache.get("c_poster") or {}
+
+            if query_r.poster not in c_poster:
+                # processed poster
+                p_poster: bytes = await self.image.Process(query_r.poster)
+                # uploaded poster
+                u_poster: str = await self.uploader.Upload(p_poster)
+
+                c_poster[query_r.poster] = u_poster
+                self._cache.put("c_poster", c_poster)
+
+            u_poster: str = c_poster[query_r.poster]
+
             # decided to check types using the m_file
             # because it ensures we'll not fall for
             # the adapter wrong search results.
@@ -84,9 +99,7 @@ class Media:
                             title=query_r.title,
                             episode=getattr(m_file, "episode", None),
                             season=getattr(m_file, "season", None),
-                            poster=await self.uploader.Upload(
-                                await self.image.Process(query_r.poster)
-                            ),
+                            poster=u_poster,
                             episode_title=query_r.episode_title,
                         )
                     )
@@ -99,9 +112,7 @@ class Media:
                             title=query_r.title,
                             director=query_r.director,
                             year=query_r.year,
-                            poster=await self.uploader.Upload(
-                                await self.image.Process(query_r.poster)
-                            ),
+                            poster=u_poster,
                         )
                     )
                 )
