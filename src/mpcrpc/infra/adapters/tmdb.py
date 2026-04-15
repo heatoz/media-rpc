@@ -34,13 +34,11 @@ class TMDB:
             headers={"Accept": "application/json", "Authorization": f"Bearer {token}"}
         )
 
-    async def __Search(self, m_file: MediaFile) -> SearchResult | None:
+        self.m_file: MediaFile | None = None
+
+    async def __search(self) -> SearchResult | None:
         """
         Search a title from TMDB.
-
-        Args:
-                m_file (MediaFile):
-                        A parsed media file object.
 
         Returns:
                 SearchResult:
@@ -53,16 +51,16 @@ class TMDB:
         # it wasn't possible to do a title + year more
         # detailed check on tmdb because its search doesn't
         # support it. Idk of any solution.
-        if m_file.type == "episode":
+        if self.m_file.type == "episode":
             response: str = await self._client.get(
                 TMDB.BASE_URL
-                + f"/search/tv?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
+                + f"/search/tv?query={urllib.parse.quote(self.m_file.title)}&include_adult=true&language=en-US&page=1"
             )
 
-        if m_file.type == "movie":
+        if self.m_file.type == "movie":
             response: str = await self._client.get(
                 TMDB.BASE_URL
-                + f"/search/movie?query={urllib.parse.quote(m_file.title)}&include_adult=true&language=en-US&page=1"
+                + f"/search/movie?query={urllib.parse.quote(self.m_file.title)}&include_adult=true&language=en-US&page=1"
             )
 
         j_resp: Any = json.loads(response)
@@ -72,16 +70,15 @@ class TMDB:
         if j_resp.get("total_results") == 0:
             return None
 
-        return SearchResult(id=j_resp.get("results")[0].get("id"))
+        return SearchResult(
+            id = j_resp.get("results")[0].get("id")
+        )
 
-    async def __Query(self, m_file: MediaFile, search_r: SearchResult) -> QueryResult:
+    async def __query(self, search_r: SearchResult) -> QueryResult:
         """
         Queries a title details from its id.
 
         Args:
-                m_file (MediaFile):
-                    The parsed media file.
-
                 search_r (SearchResult):
                         The search result.
 
@@ -93,7 +90,7 @@ class TMDB:
 
         # uses the m_file type to do checks to avoid
         # any mismatching errors with guessit results.
-        if m_file.type == "episode":
+        if self.m_file.type == "episode":
             j_resp: Any = json.loads(
                 await self._client.get(
                     TMDB.BASE_URL + f"/tv/{search_r.id}&language=en-US"
@@ -101,7 +98,7 @@ class TMDB:
             )
 
             title: str = j_resp.get("original_name") or j_resp.get("name")
-            season: str = getattr(m_file, "season", None) or "1"
+            season: str = getattr(self.m_file, "season", None) or "1"
             # this will give priority to the season poster
             poster_path = next(
                 (
@@ -117,14 +114,18 @@ class TMDB:
             j_resp: Any = json.loads(
                 await self._client.get(
                     TMDB.BASE_URL
-                    + f"/tv/{search_r.id}/season/{season}/episode/{m_file.episode}"
+                    + f"/tv/{search_r.id}/season/{season}/episode/{self.m_file.episode}"
                 )
             )
             episode_title: str = j_resp.get("original_name") or j_resp.get("name")
 
-            return QueryResult(title=title, poster=poster, episode_title=episode_title)
+            return QueryResult(
+                title = title,
+                poster = poster,
+                episode_title = episode_title
+            )
 
-        if m_file.type == "movie":
+        if self.m_file.type == "movie":
             j_resp: Any = json.loads(
                 await self._client.get(
                     TMDB.BASE_URL
@@ -144,7 +145,12 @@ class TMDB:
                 None,
             )
 
-            return QueryResult(director=director, poster=poster, title=title, year=year)
+            return QueryResult(
+                director = director,
+                poster = poster,
+                title = title,
+                year = year
+            )
 
     async def Fetch(self, m_file: MediaFile) -> QueryResult | None:
         """
@@ -157,8 +163,11 @@ class TMDB:
         Args:
             m_file
         """
-        search_r: SearchResult = await self.__Search(m_file)
+
+        self.m_file: MediaFile = m_file
+
+        search_r: SearchResult = await self.__search(m_file)
         if search_r is None:
             return None
 
-        return await self.__Query(m_file, search_r)
+        return await self.__query(m_file, search_r)

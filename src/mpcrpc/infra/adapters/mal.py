@@ -1,5 +1,4 @@
 from mpcrpc.infra.adapters import SearchResult, QueryResult
-
 from mpcrpc.infra import HttpClient
 from mpcrpc.utils import MediaFile
 
@@ -26,13 +25,11 @@ class MAL:
 
         self._client: HttpClient = HttpClient()
 
-    async def __Search(self, m_file: MediaFile) -> SearchResult | None:
+        self.m_file: MediaFile | None = None
+
+    async def __search(self) -> SearchResult | None:
         """
         Search a title from MAL.
-
-        Args:
-                m_file (MediaFile):
-                        A parsed file object.
 
         Returns:
                 SearchResult:
@@ -42,12 +39,12 @@ class MAL:
                         If the search results on nothing.
         """
 
-        if m_file.type == "episode":
+        if self.m_file.type == "episode":
             # All this shit is needed because for some reason,
             # different seasons of a anime are treated as different
             # entries on the db, so they have different ids...
-            if getattr(m_file, "season", None) and int(m_file.season) > 1:
-                query: str = f"{m_file.title} Season {m_file.season}"
+            if getattr(self.m_file, "season", None) and int(self.m_file.season) > 1:
+                query: str = f"{self.m_file.title} Season {self.m_file.season}"
 
                 j_resp: Any = json.loads(
                     await self._client.get(
@@ -61,30 +58,30 @@ class MAL:
                 j_resp: Any = json.loads(
                     await self._client.get(
                         MAL.BASE_URL
-                        + f"/anime?q={urllib.parse.quote(m_file.title)}&limit=1&type=tv"
+                        + f"/anime?q={urllib.parse.quote(self.m_file.title)}&limit=1&type=tv"
                     )
                 ).get("data")[0]
 
-        if m_file.type == "movie":
+        if self.m_file.type == "movie":
             j_resp: Any = json.loads(
                 await self._client.get(
                     MAL.BASE_URL
-                    + f"/anime?q={urllib.parse.quote(m_file.title)}&limit=1&type=movie"
+                    + f"/anime?q={urllib.parse.quote(self.m_file.title)}&limit=1&type=movie"
                 )
             ).get("data")[0]
 
         if not j_resp:
             return None
 
-        return SearchResult(id=j_resp.get("mal_id"))
+        return SearchResult(
+            id = j_resp.get("mal_id")
+        )
 
-    async def __Query(self, m_file: MediaFile, search_r: SearchResult) -> QueryResult:
+    async def __query(self, search_r: SearchResult) -> QueryResult:
         """
         Queries a title details from its id.
 
         Args:
-                m_file(MediaFile):
-                        The parsed Media File.
                 search_r (SearchResult):
                         The search result.
 
@@ -103,9 +100,9 @@ class MAL:
         # remove Season from the end of the title, ugh.
         title: str = re.sub(r" Season \d+$", "", j_resp.get("title"))
 
-        if m_file.type == "episode":
+        if self.m_file.type == "episode":
             # this is needed to get the correct page on the request.
-            page = (int(m_file.episode) - 1) // 100 + 1
+            page = (int(self.m_file.episode) - 1) // 100 + 1
 
             j_resp: Any = json.loads(
                 await self._client.get(
@@ -114,13 +111,17 @@ class MAL:
             ).get("data")
 
             episode_title: str | None = next(
-                (ep["title"] for ep in j_resp if ep["mal_id"] == int(m_file.episode)),
+                (ep["title"] for ep in j_resp if ep["mal_id"] == int(self.m_file.episode)),
                 None,
             )
 
-            return QueryResult(title=title, poster=poster, episode_title=episode_title)
+            return QueryResult(
+                title = title,
+                poster = poster,
+                episode_title = episode_title
+            )
 
-        if m_file.type == "movie":
+        if self.m_file.type == "movie":
             year: str = j_resp.get("year")
 
             j_resp: Any = json.loads(
@@ -137,7 +138,12 @@ class MAL:
                 None,
             )
 
-            return QueryResult(director=director, poster=poster, title=title, year=year)
+            return QueryResult(
+                director = director,
+                poster = poster,
+                title = title,
+                year = year
+            )
 
     async def Fetch(self, m_file: MediaFile) -> QueryResult | None:
         """
@@ -148,11 +154,14 @@ class MAL:
             methods and passing m_file two times.
 
         Args:
-            m_file
+            m_file (MediaFile):
+                The MediaFile to fetch the metadata from.
         """
 
-        search_r: SearchResult = await self.__Search(m_file)
+        self.m_file: MediaFile = m_file
+
+        search_r: SearchResult = await self.__search()
         if search_r is None:
             return None
 
-        return await self.__Query(m_file, search_r)
+        return await self.__query(search_r)
