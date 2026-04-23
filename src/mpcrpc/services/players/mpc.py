@@ -1,9 +1,6 @@
-from mpcrpc.core.models import PlaybackSession, PlaybackFile, PlaybackState
-
 from mpcrpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
-
+from mpcrpc.core.models import PlaybackSession, PlaybackState
 from mpcrpc.infra import HttpClient, EventBus
-
 from mpcrpc.utils import Cache, Regex
 
 import time
@@ -41,13 +38,17 @@ class MPC:
             f"http://localhost:{self.port}/variables.html"
         )
 
-        p_data: dict = Regex.Variables(response)
-        p_session: PlaybackSession = PlaybackSession(p_data)
-        p_file: PlaybackFile = PlaybackFile(p_data)
+        data: dict = Regex.Variables(response)
+
+        p_session: PlaybackSession = PlaybackSession(
+            file = data["file"],
+            state = int(data["state"]),
+            pos = int(data["pos"]),
+            dur = int(data["dur"])
+        )
 
         c_session: PlaybackSession | None = self._cache.get("c_session")
         c_session_ts: float | None = self._cache.get("c_session_ts")
-        c_file: PlaybackFile | None = self._cache.get("c_file")
 
         # Checks if there is a previous session cached.
         c_session_exists = c_session is not None
@@ -85,14 +86,16 @@ class MPC:
             self._cache.put("c_session", p_session)
 
             if p_session.state == PlaybackState.EMPTY:
-                self._cache.put("c_file", None)
+                self._cache.put("c_session", None)
 
             await self._event_bus.publish(PlaybackSessionUpdated(p_session))
 
         # If there is no previous cached file, or
         # the current file name differs from the cached one,
         # then update cache and publish event.
-        if not c_file or c_file.name != p_file.name:
-            self._cache.put("c_file", p_file)
-
-            await self._event_bus.publish(PlaybackFileUpdated(p_file))
+        if p_session.state != PlaybackState.EMPTY and (
+            not c_session or c_session.file != p_session.file
+        ):
+            self._cache.put("c_session", p_session)
+            
+            await self._event_bus.publish(PlaybackFileUpdated(p_session.file))

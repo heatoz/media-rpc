@@ -6,7 +6,7 @@ class PlaybackSession:
     Represents an MPC playback session.
     """
 
-    def __init__(self, _file: str, state: int, pos: int, dur: int) -> None:
+    def __init__(self, file_name: str, state: int, pos: int, dur: int) -> None:
         """
         Initializes a PlaybackSession instance.
 
@@ -20,7 +20,7 @@ class PlaybackSession:
                         If any required playback fields are missing.
         """
 
-        self.file: str = _file
+        self.file_name: str = file_name
         self.state: int = state
         self.pos: int = pos
         self.dur: int = dur
