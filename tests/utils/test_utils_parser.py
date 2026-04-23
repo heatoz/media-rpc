@@ -1,4 +1,4 @@
-from mpcrpc.utils import MediaFile, Regex  # adjust path as needed
+from media_rpc.utils import MediaFile, Regex  # adjust path as needed
 
 
 # ---------------------------------------------------------------------------

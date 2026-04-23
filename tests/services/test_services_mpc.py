@@ -1,11 +1,11 @@
-from mpcrpc.core.models import PlaybackState
+from media_rpc.core.models import PlaybackState
 
-from mpcrpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
+from media_rpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from mpcrpc.infra import EventBus
-from mpcrpc.services import MPC
+from media_rpc.infra import EventBus
+from media_rpc.services import MPC
 
 import pytest
 
@@ -56,7 +56,7 @@ def event_bus():
 
 @pytest.fixture
 def mpc(event_bus):
-    with patch("mpcrpc.services.mpc.HttpClient") as MockHttpClient:
+    with patch("media_rpc.services.mpc.HttpClient") as MockHttpClient:
         MockHttpClient.return_value = MagicMock()
         instance = MPC(event_bus=event_bus, port=13579)
     return instance
@@ -80,7 +80,7 @@ async def call_variables(mpc_instance, p_data: dict):
     )
     with (
         patch.object(mpc_instance._client, "get", new=AsyncMock(return_value=html)),
-        patch("mpcrpc.services.mpc.Regex.Variables", return_value=p_data),
+        patch("media_rpc.services.mpc.Regex.Variables", return_value=p_data),
     ):
         await mpc_instance.Variables()
 
@@ -97,12 +97,12 @@ async def warm_up(mpc_instance, event_bus, p_data: dict, ts: float = 100.0):
 
     After both calls event_bus.publish is reset so the test starts clean.
     """
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=ts):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=ts):
         await call_variables(mpc_instance, p_data)
 
     # Advance position by exactly 1000ms (1 s elapsed) — well within threshold
     p_data_2 = {**p_data, "position": str(int(p_data["position"]) + 1000)}
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=ts + 1.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=ts + 1.0):
         await call_variables(mpc_instance, p_data_2)
 
     event_bus.publish.reset_mock()
@@ -119,7 +119,7 @@ async def test_no_change_publishes_nothing(mpc, event_bus):
     await warm_up(mpc, event_bus, base, ts=100.0)
 
     # Position naturally advances ~1s worth — well within threshold
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(position=12000))
 
     event_bus.publish.assert_not_awaited()
@@ -152,7 +152,7 @@ async def test_forward_seek_publishes_session_updated(mpc, event_bus):
     await warm_up(mpc, event_bus, make_p_data(position=10000), ts=100.0)
 
     # 1s later, but position jumped 60s — deviation >> 3000ms threshold
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(position=70000))
 
     event_bus.publish.assert_awaited_once()
@@ -168,7 +168,7 @@ async def test_forward_seek_publishes_session_updated(mpc, event_bus):
 async def test_backward_seek_publishes_session_updated(mpc, event_bus):
     await warm_up(mpc, event_bus, make_p_data(position=60000), ts=100.0)
 
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(position=30000))  # went backward
 
     event_bus.publish.assert_awaited_once()
@@ -187,7 +187,7 @@ async def test_file_change_publishes_file_updated(mpc, event_bus):
     )
 
     # Same state, position naturally advanced, but different file
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(file="movie_b.mkv", position=12000))
 
     event_bus.publish.assert_awaited_once()
@@ -209,7 +209,7 @@ async def test_seek_not_detected_when_paused(mpc, event_bus):
     await warm_up(mpc, event_bus, make_p_data(state=1, position=10000), ts=100.0)
 
     # Position jumps while still paused — no seek, no state change
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(state=1, position=80000))
 
     event_bus.publish.assert_not_awaited()
@@ -239,7 +239,7 @@ async def test_cache_updated_after_session_event(mpc, event_bus):
 async def test_cache_updated_after_file_event(mpc, event_bus):
     await warm_up(mpc, event_bus, make_p_data(file="old.mkv", position=10000), ts=100.0)
 
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(file="new.mkv", position=12000))
 
     cached_file = mpc._cache.get("c_file")
@@ -262,7 +262,7 @@ async def test_position_within_threshold_not_a_seek(mpc, event_bus):
 
     # elapsed=2s, expected=12000 (from warm_up second call pos=11000, ts=101),
     # actual=12200 — drift of 200ms
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(position=12200))
 
     event_bus.publish.assert_not_awaited()
@@ -281,7 +281,7 @@ async def test_position_at_threshold_boundary_not_a_seek(mpc, event_bus):
     """
     await warm_up(mpc, event_bus, make_p_data(position=10000), ts=100.0)
 
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(position=15000))
 
     event_bus.publish.assert_not_awaited()
@@ -300,7 +300,7 @@ async def test_position_just_above_threshold_is_a_seek(mpc, event_bus):
     """
     await warm_up(mpc, event_bus, make_p_data(position=10000), ts=100.0)
 
-    with patch("mpcrpc.services.mpc.time.monotonic", return_value=102.0):
+    with patch("media_rpc.services.mpc.time.monotonic", return_value=102.0):
         await call_variables(mpc, make_p_data(position=15001))
 
     event_bus.publish.assert_awaited_once()

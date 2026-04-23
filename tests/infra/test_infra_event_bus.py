@@ -1,4 +1,4 @@
-from mpcrpc.infra import EventBus
+from media_rpc.infra import EventBus
 from dataclasses import dataclass
 from typing import Any
 import pytest
