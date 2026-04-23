@@ -7,16 +7,16 @@ graph LR
     PlaybackSessionUpdated["PlaybackSessionUpdated"]
     PlaybackFileUpdated["PlaybackFileUpdated"]
     UpdateRichPresence("Update Rich Presence")
-    MpcPollerService["MPC Poller Service"]
+    MediaPlayerPollerService["Media Player Poller Service"]
     MediaService["Media Service"]
     MediaParsed["MediaParsed"]
     RpcService["RPC Service"]
-    MPCHC("MPC-HC")
+    MediaPlayer("Media Player")
 
-    MPCHC -->|Web Interface| MpcPollerService
+    MediaPlayer -->|API| MediaPlayerPollerService
 
-    MpcPollerService -->|Publishes| PlaybackFileUpdated
-    MpcPollerService -->|Publishes| PlaybackSessionUpdated
+    MediaPlayerPollerService -->|Publishes| PlaybackFileUpdated
+    MediaPlayerPollerService -->|Publishes| PlaybackSessionUpdated
 
     PlaybackFileUpdated -->|Subscribes| MediaService
     MediaService -->|Publishes| MediaParsed
@@ -30,9 +30,9 @@ graph LR
 
 ## Components
 
-### MPC Poller Service
+### Media Player Poller Service
 
-Periodically polls MPC-HC's web interface (`/variables.html`) and detects three types of changes by comparing the current state with the previous one:
+Periodically polls a Media Player API and detects three types of changes by comparing the current state with the previous one:
 
 - **File changed** — the currently loaded file path changed, publishing a `PlaybackFileUpdated` event.
 - **State changed** — the playback state (playing, paused, stopped) changed, publishing a `PlaybackSessionUpdated` event.
@@ -63,13 +63,13 @@ Manages Discord Rich Presence. It subscribes to three events:
 
 | Event | Published by | Payload |
 |---|---|---|
-| `PlaybackFileUpdated` | MPC Poller Service | `PlaybackFile` (current filename) |
-| `PlaybackSessionUpdated` | MPC Poller Service | `PlaybackSession` (state, position, duration) |
+| `PlaybackFileUpdated` | Media Player Poller Service | `PlaybackFile` (current filename) |
+| `PlaybackSessionUpdated` | Media Player Poller Service | `PlaybackSession` (state, position, duration) |
 | `MediaParsed` | Media Service | `Movie` or `Series` |
 
 ## Data Models
 
-**Playback** — `PlaybackFile` holds the current filename; `PlaybackSession` holds the playback state, position, and duration. `PlaybackState` is an enum with `PLAYING`, `PAUSED`, and `EMPTY`.
+**Playback** — `PlaybackSession` holds the playback file name, state, position, and duration. `PlaybackState` is an enum with `PLAYING`, `PAUSED`, and `EMPTY`.
 
 **Media** — `Movie` holds title, director, year, and poster URL. `Series` holds title, season, episode, and poster URL.
 
