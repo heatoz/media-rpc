@@ -64,6 +64,14 @@ name = "litterbox"
 
 
 def _load_config() -> Config:
+    """
+    Loads configuration from a file.
+
+    Returns:
+        Config:
+            A Config object.
+    """
+
     if not CONFIG_PATH.exists():
         CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
         CONFIG_PATH.write_text(DEFAULT_CONFIG)
@@ -85,6 +93,18 @@ def _load_config() -> Config:
 
 
 def _build_adapter(config: Config) -> object:
+    """
+    Build the adapter instance from the given configuration.
+
+    Args:
+        config (Config):
+            The loaded configuration state.
+
+    Returns:
+        object:
+            The instantiated adapter.
+    """
+
     if config.adapter == "tmdb":
         if not config.adapter_token:
             raise ValueError("TMDB adapter requires a token in config.toml")
@@ -100,6 +120,18 @@ def _build_adapter(config: Config) -> object:
 
 
 def _build_uploader(config: Config) -> object:
+    """
+    Build the uploader instance from the given configuration.
+
+    Args:
+        config (Config):
+            The loaded configuration state.
+
+    Returns:
+        object:
+            The instantiated uploader.
+    """
+
     if config.uploader == "imgbb":
         if not config.uploader_token:
             raise ValueError("ImgBB uploader requires a token in config.toml")
@@ -194,7 +226,7 @@ async def _poll(player: object) -> None:
 
 async def _cli() -> None:
     """
-    MPC-RPC Entry Point
+    media-rpc Entry Point
     """
 
     config = _load_config()
