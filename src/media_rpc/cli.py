@@ -1,7 +1,7 @@
 from media_rpc.infra.uploaders import Litterbox, ImgBB, Imgur, OnlyImage
 from media_rpc.infra.adapters import IMDB, TMDB, MAL
-from media_rpc.services import Media, RPC
 from media_rpc.services.players import MPC, Jellyfin
+from media_rpc.services import Media, RPC
 from media_rpc.infra import EventBus
 
 from pathlib import Path
@@ -20,33 +20,15 @@ class Config:
 
     def __init__(
         self,
-        port: int,
+        player: str,
+        player_options: dict,
         adapter: str,
         adapter_token: str | None,
         uploader: str,
         uploader_token: str | None,
     ) -> None:
-        """
-        Initializes a Configuration instance.
-
-        Args:
-            port (int):
-                The MPC-HC Web Interface port.
-
-            adapter (str):
-                The adapter name to parse media from.
-
-            adapter_token (str, optional):
-                The API token for the adapter, if required.
-
-            uploader (str):
-                The uploader name to host images.
-
-            uploader_token (str, optional):
-                The API token for the uploader, if required.
-        """
-
-        self.port: int = port
+        self.player: str = player
+        self.player_options: dict = player_options
         self.adapter: str = adapter
         self.adapter_token: str | None = adapter_token
         self.uploader: str = uploader
@@ -54,8 +36,16 @@ class Config:
 
 
 DEFAULT_CONFIG = """\
-[mpc]
-port = 13579
+[player]
+name = "mpc"
+# port = 13579  # optional, defaults to 13579
+
+# name = "jellyfin"
+# host = "localhost"
+# token = "your_token_here"
+# user_name = "your_username"
+# port = 8096  # optional, defaults to 8096
+# ...
 
 [adapter]
 name = "imdb"
@@ -69,21 +59,11 @@ name = "litterbox"
 # name = "imgbb"
 # token = "your_token_here"
 # ...
+
 """
 
 
 def _load_config() -> Config:
-    """
-    Load the configuration from the TOML file.
-
-    If the config file does not exist, a default one is created
-    and the program exits, prompting the user to edit it.
-
-    Returns:
-        Config:
-            The loaded configuration state.
-    """
-
     if not CONFIG_PATH.exists():
         CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
         CONFIG_PATH.write_text(DEFAULT_CONFIG)
@@ -92,8 +72,11 @@ def _load_config() -> Config:
     with CONFIG_PATH.open("rb") as f:
         raw = tomllib.load(f)
 
+    player_raw = raw.get("player", {})
+
     return Config(
-        port=raw.get("mpc", {}).get("port", 13579),
+        player=player_raw["name"],
+        player_options={k: v for k, v in player_raw.items() if k != "name"},
         adapter=raw["adapter"]["name"],
         adapter_token=raw["adapter"].get("token"),
         uploader=raw["uploader"]["name"],
@@ -102,18 +85,6 @@ def _load_config() -> Config:
 
 
 def _build_adapter(config: Config) -> object:
-    """
-    Build the media adapter from the given configuration.
-
-    Args:
-        config (Config):
-            The loaded configuration state.
-
-    Returns:
-        object:
-            The instantiated adapter.
-    """
-
     if config.adapter == "tmdb":
         if not config.adapter_token:
             raise ValueError("TMDB adapter requires a token in config.toml")
@@ -129,18 +100,6 @@ def _build_adapter(config: Config) -> object:
 
 
 def _build_uploader(config: Config) -> object:
-    """
-    Build the image uploader from the given configuration.
-
-    Args:
-        config (Config):
-            The loaded configuration state.
-
-    Returns:
-        object:
-            The instantiated uploader.
-    """
-
     if config.uploader == "imgbb":
         if not config.uploader_token:
             raise ValueError("ImgBB uploader requires a token in config.toml")
@@ -162,18 +121,71 @@ def _build_uploader(config: Config) -> object:
     raise ValueError(f"Unknown uploader: {config.uploader}")
 
 
-async def _poll(mpc: MPC) -> None:
+def _build_player(config: Config, event_bus: EventBus) -> object:
     """
-    Runs a continuous MPC-HC polling loop.
+    Build the player instance from the given configuration.
 
     Args:
-        mpc (MPC):
-            A MPC Service instance.
+        config (Config):
+            The loaded configuration state.
+
+        event_bus (EventBus):
+            The shared event bus instance.
+
+    Returns:
+        object:
+            The instantiated player.
     """
+
+    opts = config.player_options
+
+    if config.player == "mpc":
+        kwargs = {}
+        if "port" in opts:
+            kwargs["port"] = opts["port"]
+
+        return MPC(event_bus, **kwargs)
+
+    if config.player == "jellyfin":
+        for required in ("host", "token", "user_name"):
+            if required not in opts:
+                raise ValueError(
+                    f"Jellyfin player requires '{required}' in config.toml"
+                )
+
+        kwargs = {
+            "host": opts["host"],
+            "token": opts["token"],
+            "user_name": opts["user_name"],
+        }
+
+        if "port" in opts:
+            kwargs["port"] = opts["port"]
+
+        return Jellyfin(event_bus, **kwargs)
+
+    raise ValueError(f"Unknown player: {config.player!r}")
+
+
+async def _poll(player: object) -> None:
+    """
+    Runs a continuous polling loop for the active player.
+
+    Args:
+        player (object):
+            A player service instance.
+    """
+
+    if isinstance(player, MPC):
+        poll = player.Variables
+    elif isinstance(player, Jellyfin):
+        poll = player.Sessions
+    else:
+        raise TypeError(f"Unsupported player type: {type(player)!r}")
 
     while True:
         try:
-            await mpc.Sessions()
+            await poll()
         except Exception:
             print("Error:", traceback.format_exc())
 
@@ -188,24 +200,21 @@ async def _cli() -> None:
     config = _load_config()
 
     event_bus: EventBus = EventBus()
-    mpc: Jellyfin = Jellyfin(event_bus, "localhost", "e9cf9d8cb77344e39cd959c593d876fb", "allan")
     rpc: RPC = RPC(event_bus)
 
     adapter = _build_adapter(config)
     uploader = _build_uploader(config)
     Media(event_bus, adapter, uploader)
 
+    player = _build_player(config, event_bus)
+
     await rpc.start(DISCORD_CLIENT_ID)
 
-    asyncio.create_task(_poll(mpc))
+    asyncio.create_task(_poll(player))
     await asyncio.Event().wait()
 
 
 def main() -> None:
-    """
-    CLI entry point.
-    """
-
     asyncio.run(_cli())
 
 
