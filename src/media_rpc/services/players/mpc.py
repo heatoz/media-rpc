@@ -43,8 +43,8 @@ class MPC:
         p_session: PlaybackSession = PlaybackSession(
             file_name = data["file"],
             state = int(data["state"]),
-            pos = int(data["pos"]),
-            dur = int(data["dur"])
+            pos = int(data["position"]),
+            dur = int(data["duration"])
         )
 
         c_session: PlaybackSession | None = self._cache.get("c_session")
@@ -94,8 +94,8 @@ class MPC:
         # the current file name differs from the cached one,
         # then update cache and publish event.
         if p_session.state != PlaybackState.EMPTY and (
-            not c_session or c_session.file != p_session.file
+            not c_session or c_session.file_name != p_session.file_name
         ):
             self._cache.put("c_session", p_session)
             
-            await self._event_bus.publish(PlaybackFileUpdated(p_session.file))
+            await self._event_bus.publish(PlaybackFileUpdated(p_session.file_name))
