@@ -1,0 +1,18 @@
+from media_rpc.core.models import Movie, Series
+
+
+class MediaParsed:
+    """
+    Triggered when Media Service finishes parsing.
+    """
+
+    def __init__(self, media: Movie | Series):
+        """
+        Initialize a MediaParsed object.
+
+        Args:
+            media (Movie | Series):
+                The parsed media object.
+        """
+
+        self.media = media

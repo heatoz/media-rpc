@@ -1,0 +1,118 @@
+from media_rpc.core.events import PlaybackFileUpdated, MediaParsed
+from media_rpc.utils import MediaFile, Image, Cache
+from media_rpc.infra.adapters import QueryResult
+from media_rpc.core.models import Movie, Series
+from media_rpc.infra import EventBus
+
+
+class Media:
+    """
+    Media Service created to parse a Movie / Series object
+    out of the MPC-HC Web Interface /variables "file" field.
+    """
+
+    def __init__(self, event_bus: EventBus, adapter: object, uploader: object):
+        """
+        Initialize a Media Service object.
+
+        Args:
+                event_bus (EventBus):
+                        The Event Bus used by the service.
+
+                adapter (IMDB | TMDB):
+                        The adapter used to get the metadata.
+                        It should be initialized and configured by
+                        the entry point.
+        """
+
+        self._event_bus: EventBus = event_bus
+        self._cache: Cache = Cache()
+
+        # Subscribes Parse() to PlaybackFileUpdated.
+        self._event_bus.subscribe(PlaybackFileUpdated, self.Parse)
+
+        self.uploader: object = uploader
+        self.adapter: object = adapter
+
+        # initialize image processor,
+        # did this to keep a single session between
+        # processing.
+        self.image: Image = Image()
+
+    async def Parse(self, event: PlaybackFileUpdated) -> None:
+        """
+        Parses a PlaybackFile received from PlaybackFileUpdated
+        event and publishes the parsed media data to the event bus.
+
+        This function handles both movies and series. It uses the adapter
+        to search for metadata and safely extracts attributes from the
+        playback file to avoid errors.
+
+        Note:
+                If the PlaybackFile is not recognized by the adapter,
+                in other words, if the search returns nothing, the
+                MediaParsed event is not going to be sent, resulting
+                on the RPC Service not updating Rich Presence.
+                Also, depending on the filename, wrong presences
+                could be presented. I don't think there's a solution
+                to that, please rename your files.
+
+        Args:
+                event (PlaybackFileUpdated):
+                        The PlaybackFileUpdated event, contains
+                        the PlaybackFile as p_file, which contains
+                        the filename on name attribute.
+        """
+
+        # Note: named the parsed mediafile to m_file
+        # to avoid confusions with the raw playbackfile p_file.
+        m_file: MediaFile = MediaFile.Parse(event.file_name)
+
+        # Returns None if search finds nothing.
+        query_r: QueryResult | None = await self.adapter.Fetch(m_file)
+
+        if query_r:
+            # cached poster
+            c_poster: dict[str, str] = self._cache.get("c_poster") or {}
+
+            if query_r.poster not in c_poster:
+                # processed poster
+                p_poster: bytes = await self.image.Process(query_r.poster)
+                # uploaded poster
+                u_poster: str = await self.uploader.Upload(p_poster)
+
+                c_poster[query_r.poster] = u_poster
+                self._cache.put("c_poster", c_poster)
+
+            u_poster: str = c_poster[query_r.poster]
+
+            # decided to check types using the m_file
+            # because it ensures we'll not fall for
+            # the adapter wrong search results.
+            if m_file.type == "episode":
+                # Safely get episode and season attributes from the
+                # playback file since that's the only way to get them.
+                # If they don't exist, default to None to avoid AttributeError.
+                await self._event_bus.publish(
+                    MediaParsed(
+                        Series(
+                            title=query_r.title,
+                            episode=getattr(m_file, "episode", None),
+                            season=getattr(m_file, "season", None),
+                            poster=u_poster,
+                            episode_title=query_r.episode_title,
+                        )
+                    )
+                )
+
+            if m_file.type == "movie":
+                await self._event_bus.publish(
+                    MediaParsed(
+                        Movie(
+                            title=query_r.title,
+                            director=query_r.director,
+                            year=query_r.year,
+                            poster=u_poster,
+                        )
+                    )
+                )

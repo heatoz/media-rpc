@@ -1,0 +1,17 @@
+[mpc]
+port = 13579
+
+[adapter]
+#name = "imdb"
+name = "tmdb"
+token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YmM3ZWNiNGY5OGE3MDFiNmY3MmQ0MThmOWRlNmZkMCIsIm5iZiI6MTY5NzI5MzQ2OC42Miwic3ViIjoiNjUyYWE0OWNlYTg0YzcwMGViYTE5NTVkIiwic2NvcGVzIjpbImFwaV9yZWFkIl0sInZlcnNpb24iOjF9.P4ke45M2k1EINEg9agPi15a8ElCU7C1afWT4E9vUwaw"
+# token = "your_token_here"
+# name = "mal"
+# ...
+
+[uploader]
+name = "litterbox"
+#token = "ba699c87f8832e363945296458c2447a"
+# name = "imgbb"
+# token = "your_token_here"
+# ...
