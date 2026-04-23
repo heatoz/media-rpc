@@ -1,13 +1,12 @@
 <div align="center">
 
-# mpc-rpc
+# media-rpc
 
-Event-based Discord Rich Presence integration for MPC-HC.
+Event-based Discord Rich Presence integration for Media Players.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python&logoColor=white)](https://python.org)
 [![Discord](https://img.shields.io/badge/Discord-Rich%20Presence-5865F2?logo=discord&logoColor=white)](https://discord.com)
-[![MPC-HC](https://img.shields.io/badge/MPC--HC-compatible-red)](https://github.com/clsid2/mpc-hc)
 
 <img src="https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/s_movie.png" width="32%" />
 <img src="https://raw.githubusercontent.com/heatoz/mpc-rpc/refs/heads/master/assets/s_movie2.png" width="32%" />
@@ -15,26 +14,31 @@ Event-based Discord Rich Presence integration for MPC-HC.
 
 </div>
 
-## Requirements
-
-- [MPC-HC](https://github.com/clsid2/mpc-hc) with Web Interface enabled (`View → Options → Web Interface → Listen on port`)
-
 ## Usage
 
 ```
-mpc-rpc.exe
+media-rpc
 ```
 
 ## Default Configuration
 
 ```toml
-[mpc]
-port = 13579
+[player]
+name = "mpc"
+# port = 13579  # optional, defaults to 13579
+
+# name = "jellyfin"
+# host = "localhost"
+# token = "your_token_here"
+# user_name = "your_username"
+# port = 8096  # optional, defaults to 8096
+# ...
 
 [adapter]
 name = "imdb"
 # name = "tmdb"
 # token = "your_token_here"
+# name = "mal"
 # ...
 
 [uploader]
@@ -43,6 +47,42 @@ name = "litterbox"
 # token = "your_token_here"
 # ...
 ```
+
+## Players
+
+| Player | Token required | Description |
+|---|---|---|
+| `mpc` | No | [MPC-HC](https://github.com/clsid2/mpc-hc) |
+| `jellyfin` | Yes | [Jellyfin](https://jellyfin.org) Media Server |
+
+<details>
+<summary><code>mpc</code> configuration</summary>
+
+```toml
+[player]
+name = "mpc"
+port = 13579  # optional, defaults to 13579
+```
+
+The MPC-HC web interface must be enabled under **View → Options → Web Interface**.
+
+</details>
+
+<details>
+<summary><code>jellyfin</code> configuration</summary>
+
+```toml
+[player]
+name = "jellyfin"
+host = "localhost"
+token = "your_token_here"
+user_name = "your_username"
+port = 8096  # optional, defaults to 8096
+```
+
+The API token can be generated in **Dashboard → API Keys**.
+
+</details>
 
 ## Adapters
 
