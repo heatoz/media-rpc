@@ -5,7 +5,7 @@ from media_rpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from media_rpc.infra import EventBus
-from media_rpc.services import MPC
+from media_rpc.services.players import MPC
 
 import pytest
 
