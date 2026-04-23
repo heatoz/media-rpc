@@ -23,7 +23,7 @@ class PlaybackFileUpdated:
     Represents a PlaybackFile update triggered by the MPC poller service.
     """
 
-    def __init__(self, p_file: PlaybackFile) -> None:
+    def __init__(self, _file: str) -> None:
         """
         Initializes a PlaybackFileUpdated event type.
 
@@ -32,4 +32,4 @@ class PlaybackFileUpdated:
                 The updated PlaybackFile.
         """
 
-        self.p_file: PlaybackFile = p_file
+        self.file: str = _file
