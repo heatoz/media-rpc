@@ -1,7 +1,7 @@
 [project]
-name = "mpcrpc"
+name = "media_rpc"
 version = "0.4.1"
-description = "MPC-HC event-based Discord rich presence integration"
+description = "Media Players event-based Discord rich presence integration"
 authors = [
     {name = "chronod",email = "klhwjm@protonmail.com"}
 ]
@@ -15,14 +15,14 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "mpcrpc", from = "src"}]
+packages = [{include = "media_rpc", from = "src"}]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [project.scripts]
-mpc-rpc = "mpcrpc.cli:main"
+mpc-rpc = "media_rpc.cli:main"
 
 [dependency-groups]
 test = [
