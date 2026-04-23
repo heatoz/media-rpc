@@ -69,12 +69,12 @@ jobs:
           --collect-data guessit
           --collect-submodules babelfish
           --collect-submodules guessit
-          --name mpc-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
-          src/mpcrpc/cli.py
+          --name media-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
+          src/media_rpc/cli.py
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mpc-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
+          name: media-rpc-${{ steps.version.outputs.new }}-windows-${{ matrix.arch }}
           path: dist/*.exe
   release:
     needs: build
