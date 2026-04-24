@@ -1,6 +1,6 @@
 from media_rpc.infra.uploaders import Litterbox, ImgBB, Imgur, OnlyImage
+from media_rpc.services.players import MPC, Jellyfin, Plex
 from media_rpc.infra.adapters import IMDB, TMDB, MAL
-from media_rpc.services.players import MPC, Jellyfin
 from media_rpc.services import Media, RPC
 from media_rpc.infra import EventBus
 
@@ -196,6 +196,24 @@ def _build_player(config: Config, event_bus: EventBus) -> object:
 
         return Jellyfin(event_bus, **kwargs)
 
+    if config.player == "plex":
+        for required in ("host", "token", "user_name"):
+            if required not in opts:
+                raise ValueError(
+                    f"Plex player requires '{required}' in config.toml"
+                )
+
+        kwargs = {
+            "host": opts["host"],
+            "token": opts["token"],
+            "user_name": opts["user_name"],
+        }
+
+        if "port" in opts:
+            kwargs["port"] = opts["port"]
+
+        return Plex(event_bus, **kwargs)
+
     raise ValueError(f"Unknown player: {config.player!r}")
 
 
@@ -211,6 +229,8 @@ async def _poll(player: object) -> None:
     if isinstance(player, MPC):
         poll = player.Variables
     elif isinstance(player, Jellyfin):
+        poll = player.Sessions
+    elif isinstance(player, Plex):
         poll = player.Sessions
     else:
         raise TypeError(f"Unsupported player type: {type(player)!r}")
