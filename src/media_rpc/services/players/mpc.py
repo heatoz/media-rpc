@@ -1,15 +1,20 @@
 from media_rpc.core.events import PlaybackSessionUpdated, PlaybackFileUpdated
 from media_rpc.core.models import PlaybackSession, PlaybackState
 from media_rpc.infra import HttpClient, EventBus
-from media_rpc.utils import Cache, Regex
+from media_rpc.utils import Cache
 
 import time
-
+import re
 
 class MPC:
     """
     Client interface for interacting with an MPC HTTP instance.
     """
+
+    # MPC-HC /Variables endpoint p tag matcher
+    P_TAG: re.Pattern = re.compile(
+        r'<p id="(file|filedir|state|position|duration)">(.+?)</p>', re.IGNORECASE
+    )
 
     def __init__(self, event_bus: EventBus, port: int = 13579) -> None:
         """
@@ -38,14 +43,7 @@ class MPC:
             f"http://localhost:{self.port}/variables.html"
         )
 
-        data: dict = Regex.Variables(response)
-
-        p_session: PlaybackSession = PlaybackSession(
-            file_name = data["file"],
-            state = int(data["state"]),
-            pos = int(data["position"]),
-            dur = int(data["duration"])
-        )
+        p_session: PlaybackSession = self._build_session(response)
 
         c_session: PlaybackSession | None = self._cache.get("c_session")
         c_session_ts: float | None = self._cache.get("c_session_ts")
@@ -99,3 +97,25 @@ class MPC:
             self._cache.put("c_session", p_session)
             
             await self._event_bus.publish(PlaybackFileUpdated(p_session.file_name))
+
+    def _build_session(self, variables: str | None) -> PlaybackSession:
+        """
+        Builds a PlaybackSession from raw MPC Variables endpoint data.
+
+        Args:
+            variables (str, None):
+                MPC /Variables raw response data.
+
+        Returns:
+            PlaybackSession:
+                A parsed PlaybackSession object.
+        """
+
+        data: dict = dict(MPC.P_TAG.findall(variables))
+
+        return PlaybackSession(
+            file_name = data["file"],
+            state = int(data["state"]),
+            pos = int(data["position"]),
+            dur = int(data["duration"])
+        )
