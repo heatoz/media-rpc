@@ -1,4 +1,4 @@
-from .parser import MediaFile
+from .mediafile import MediaFile
 from .image import Image
 from .cache import Cache
 

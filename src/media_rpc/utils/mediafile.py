@@ -1,5 +1,4 @@
 from guessit import guessit
-import re
 
 
 class MediaFile:
