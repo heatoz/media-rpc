@@ -54,6 +54,7 @@ name = "litterbox"
 |---|---|---|
 | `mpc` | No | [MPC-HC](https://github.com/clsid2/mpc-hc) |
 | `jellyfin` | Yes | [Jellyfin](https://jellyfin.org) Media Server |
+| `plex` | Yes | [Plex](https://plex.tv) Media Server |
 
 <details>
 <summary><code>mpc</code> configuration</summary>
@@ -81,6 +82,23 @@ port = 8096  # optional, defaults to 8096
 ```
 
 The API token can be generated in **Dashboard → API Keys**.
+
+</details>
+
+<details>
+<summary><code>plex</code> configuration</summary>
+
+```toml
+[player]
+name = "plex"
+host = "localhost"
+token = "your_token_here"
+user_name = "your_username"
+port = 32400  # optional, defaults to 32400
+```
+
+The API token can be obtained by clicking any item → **Get Info → View XML**
+and copying the **X-Plex-Token** value from the URL.
 
 </details>
 
