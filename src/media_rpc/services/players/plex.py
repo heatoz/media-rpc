@@ -98,7 +98,7 @@ class Plex:
                     p_session.pos
                     - (c_session.pos + (time.monotonic() - c_session_ts) * 1000)
                 )
-                > 3000
+                > 8000
             )
         )
 
@@ -155,8 +155,21 @@ class Plex:
         is_paused: bool = player.get("state") == "paused"
 
         rating_key: str = session.get("ratingKey", "")
-        file_path: str = await self._fetch_file_path(rating_key) if rating_key else ""
+        
+        file_path: str = ""
+        
+        # avoid requesting the rating_key again
+        # if it was already requested.
+        if rating_key:
+            c_path = self._cache.get(rating_key)
 
+            if c_path:
+                file_path = c_path
+            else:
+                file_path = await self._fetch_file_path(rating_key)
+
+                self._cache.put(rating_key, file_path)
+        
         return PlaybackSession(
             file_name=file_path,
             state=PlaybackState.PAUSED if is_paused else PlaybackState.PLAYING,
