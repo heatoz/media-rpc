@@ -1,7 +1,7 @@
 [project]
 name = "media_rpc"
 version = "0.4.1"
-description = "Media Players event-based Discord rich presence integration"
+description = "Event-based Discord rich presence integration for Media Players"
 authors = [
     {name = "chronod",email = "klhwjm@protonmail.com"}
 ]
@@ -22,7 +22,7 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [project.scripts]
-mpc-rpc = "media_rpc.cli:main"
+media-rpc = "media_rpc.cli:main"
 
 [dependency-groups]
 test = [
