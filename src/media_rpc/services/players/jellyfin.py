@@ -87,7 +87,7 @@ class Jellyfin:
 
         # Determines whether a seek occurred by comparing the actual playback
         # position against the expected position based on real elapsed time.
-        # A deviation above 3000 (thresold below MPC-HC's 5s seek step)
+        # A deviation above 3000 (thresold below 5s seek step)
         # indicates a seek; backward movement is always treated as one.
         p_pos_seeked = (
             c_session is not None
