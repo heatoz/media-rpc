@@ -70,14 +70,7 @@ class Jellyfin:
             None,
         )
 
-        data: dict = self._parse_sessions(user_session)
-
-        p_session: PlaybackSession = PlaybackSession(
-            file_name = data["file"],
-            state = int(data["state"]),
-            pos = int(data["pos"]),
-            dur = int(data["dur"])
-        )
+        p_session: PlaybackSession = self._build_session(user_session)
 
         c_session: PlaybackSession | None = self._cache.get("c_session")
         c_session_ts: float | None = self._cache.get("c_session_ts")
@@ -132,26 +125,26 @@ class Jellyfin:
             
             await self._event_bus.publish(PlaybackFileUpdated(p_session.file_name))
 
-    def _parse_sessions(self, session: dict | None) -> dict:
+    def _build_session(self, session: dict | None) -> PlaybackSession:
         """
-        Parses the raw Jellyfin sessions endpoint response into a desired dictionary.
+        Builds a PlaybackSession from raw Jellyfin Sessions endpoint data.
 
         Args:
             session (dict, None):
-                The raw response of Sessions.
-        
+                Jellyfin /Sessions raw response data.
+
         Returns:
-            dict:
-                A dictionary containing all necessary data.
+            PlaybackSession:
+                A parsed PlaybackSession object.
         """
 
         if not session or not session.get("NowPlayingItem"):
-            return {
-                "state": PlaybackState.EMPTY,
-                "pos": 0,
-                "dur": 0,
-                "file": "",
-            }
+            return PlaybackSession(
+                state = PlaybackState.EMPTY,
+                pos = 0,
+                dur = 0,
+                file_name = ""
+            )
 
         play_state = session.get("PlayState", {})
         item = session["NowPlayingItem"]
@@ -163,9 +156,9 @@ class Jellyfin:
         pos_ticks: int = play_state.get("PositionTicks", 0)
         dur_ticks: int = session["NowPlayingItem"].get("RunTimeTicks", 0)
 
-        return {
-            "state": PlaybackState.PAUSED if is_paused else PlaybackState.PLAYING,
-            "pos": pos_ticks // 10_000,
-            "dur": dur_ticks // 10_000,
-            "file": item.get("Path")
-        }
+        return PlaybackSession(
+            state = PlaybackState.PAUSED if is_paused else PlaybackState.PLAYING,
+            pos = pos_ticks // 10_000,
+            dur = dur_ticks // 10_000,
+            file_name = item.get("Path")
+        )
