@@ -1,6 +1,6 @@
 [project]
 name = "media_rpc"
-version = "0.4.1"
+version = "1.0.0"
 description = "Event-based Discord rich presence integration for Media Players"
 authors = [
     {name = "chronod",email = "klhwjm@protonmail.com"}
