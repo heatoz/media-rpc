@@ -80,33 +80,3 @@ class MediaFile:
             setattr(m_file, key, value)
 
         return m_file
-
-
-class Regex:
-    """
-    Contains all regex data parsing logic.
-
-    Created so the MPC service models do not need
-    to be concerned with regex details.
-    """
-
-    # MPC /variables endpoint P matcher
-    P_TAG: re.Pattern = re.compile(
-        r'<p id="(file|filedir|state|position|duration)">(.+?)</p>', re.IGNORECASE
-    )
-
-    @staticmethod
-    def Variables(raw: str) -> dict[str, str]:
-        """
-        Parses the raw HTML returned by the Variables endpoint.
-
-        Args:
-                raw (str):
-                        The raw HTML content.
-
-        Returns:
-                dict:
-                        A dictionary containing the parsed data.
-        """
-
-        return dict(Regex.P_TAG.findall(raw))
