@@ -284,14 +284,25 @@ async def _cli() -> None:
 
     adapter = _build_adapter(config)
     uploader = _build_uploader(config)
-    Media(event_bus, adapter, uploader)
+    media = Media(event_bus, adapter, uploader)
 
     player = _build_player(config, event_bus)
 
     await rpc.start(DISCORD_CLIENT_ID)
 
     asyncio.create_task(_poll(player))
-    await asyncio.Event().wait()
+    
+    try:
+        await asyncio.Event().wait()
+    except asyncio.CancelledError:
+        pass
+    finally:
+        # clean things out :)
+        await player._client.close()
+        await adapter._client.close()
+        await uploader._client.close()
+        await media.image._client.close()
+        await asyncio.sleep(0.25)
 
 
 def main() -> None:
