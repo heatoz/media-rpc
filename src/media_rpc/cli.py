@@ -173,23 +173,29 @@ def _build_player(config: Config, event_bus: EventBus) -> object:
 
     if config.player == "mpc":
         kwargs = {}
+        
+        if "host" in opts:
+            kwargs["host"] = opts["host"]
+
         if "port" in opts:
             kwargs["port"] = opts["port"]
 
         return MPC(event_bus, **kwargs)
 
     if config.player == "jellyfin":
-        for required in ("host", "token", "user_name"):
+        for required in ("token", "user_name"):
             if required not in opts:
                 raise ValueError(
                     f"Jellyfin player requires '{required}' in config.toml"
                 )
 
         kwargs = {
-            "host": opts["host"],
             "token": opts["token"],
-            "user_name": opts["user_name"],
+            "user_name": opts["user_name"]
         }
+
+        if "host" in opts:
+            kwargs["host"] = opts["host"]
 
         if "port" in opts:
             kwargs["port"] = opts["port"]
@@ -197,17 +203,19 @@ def _build_player(config: Config, event_bus: EventBus) -> object:
         return Jellyfin(event_bus, **kwargs)
 
     if config.player == "plex":
-        for required in ("host", "token", "user_name"):
+        for required in ("token", "user_name"):
             if required not in opts:
                 raise ValueError(
                     f"Plex player requires '{required}' in config.toml"
                 )
 
         kwargs = {
-            "host": opts["host"],
             "token": opts["token"],
-            "user_name": opts["user_name"],
+            "user_name": opts["user_name"]
         }
+
+        if "host" in opts:
+            kwargs["host"] = opts["host"]
 
         if "port" in opts:
             kwargs["port"] = opts["port"]
