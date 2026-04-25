@@ -16,7 +16,12 @@ class MPC:
         r'<p id="(file|filedir|state|position|duration)">(.+?)</p>', re.IGNORECASE
     )
 
-    def __init__(self, event_bus: EventBus, port: int = 13579) -> None:
+    def __init__(
+        self,
+        event_bus: EventBus,
+        host: str = "localhost",
+        port: int = 13579
+    ) -> None:
         """
         Initialize the MPC client.
 
@@ -32,6 +37,7 @@ class MPC:
         self._event_bus: EventBus = event_bus
         self._cache: Cache = Cache()
 
+        self.host: str = host
         self.port: int = port
 
     async def Variables(self) -> None:
@@ -40,7 +46,7 @@ class MPC:
         """
 
         response: str = await self._client.get(
-            f"http://localhost:{self.port}/variables.html"
+            f"http://{self.host}:{self.port}/variables.html"
         )
 
         p_session: PlaybackSession = self._build_session(response)
