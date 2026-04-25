@@ -1,5 +1,5 @@
 from media_rpc.infra.uploaders import Litterbox, ImgBB, Imgur, OnlyImage
-from media_rpc.services.players import MPC, Jellyfin, Plex
+from media_rpc.services.players import MPC, Jellyfin, Plex, VLC
 from media_rpc.infra.adapters import IMDB, TMDB, MAL
 from media_rpc.services import Media, RPC
 from media_rpc.infra import EventBus
@@ -222,6 +222,24 @@ def _build_player(config: Config, event_bus: EventBus) -> object:
 
         return Plex(event_bus, **kwargs)
 
+    if config.player == "vlc":
+        kwargs = {}
+        
+        if "password" not in opts:
+            raise ValueError(
+                "VLC player requires 'password' in config.toml"
+            )
+        
+        kwargs["password"] = opts["password"]
+
+        if "host" in opts:
+            kwargs["host"] = opts["host"]
+
+        if "port" in opts:
+            kwargs["port"] = opts["port"]
+
+        return VLC(event_bus, **kwargs)
+
     raise ValueError(f"Unknown player: {config.player!r}")
 
 
@@ -240,6 +258,8 @@ async def _poll(player: object) -> None:
         poll = player.Sessions
     elif isinstance(player, Plex):
         poll = player.Sessions
+    elif isinstance(player, VLC):
+        poll = player.Status
     else:
         raise TypeError(f"Unsupported player type: {type(player)!r}")
 
