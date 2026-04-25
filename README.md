@@ -25,13 +25,8 @@ media-rpc
 ```toml
 [player]
 name = "mpc"
-# port = 13579  # optional, defaults to 13579
-
-# name = "jellyfin"
-# host = "localhost"
-# token = "your_token_here"
-# user_name = "your_username"
-# port = 8096  # optional, defaults to 8096
+# name = "vlc"
+# password = "your_password_here"
 # ...
 
 [adapter]
@@ -53,6 +48,7 @@ name = "litterbox"
 | Player | Token required | Description |
 |---|---|---|
 | `mpc` | No | [MPC-HC](https://github.com/clsid2/mpc-hc) |
+| `vlc` | Yes | [VLC](https://www.videolan.org/vlc/) Media Player |
 | `jellyfin` | Yes | [Jellyfin](https://jellyfin.org) Media Server |
 | `plex` | Yes | [Plex](https://plex.tv) Media Server |
 
@@ -62,10 +58,27 @@ name = "litterbox"
 ```toml
 [player]
 name = "mpc"
+host = "localhost" # optional, defaults to localhost
 port = 13579  # optional, defaults to 13579
 ```
 
 The MPC-HC web interface must be enabled under **View → Options → Web Interface**.
+
+</details>
+
+<details>
+<summary><code>vlc</code> configuration</summary>
+
+```toml
+[player]
+name = "vlc"
+host = "localhost" # optional, defaults to localhost
+port = 32400  # optional, defaults to 32400
+password = "your_password_here"
+```
+
+The VLC web interface must be enabled under **Tools → Preferences → All → Main Interfaces → Web**.<br>
+A password must be set under **Tools → Preferences → All → Main Interfaces → Lua → Lua HTTP → Password**.
 
 </details>
 
@@ -75,10 +88,10 @@ The MPC-HC web interface must be enabled under **View → Options → Web Interf
 ```toml
 [player]
 name = "jellyfin"
-host = "localhost"
+host = "localhost" # optional, defaults to localhost
+port = 8096  # optional, defaults to 8096
 token = "your_token_here"
 user_name = "your_username"
-port = 8096  # optional, defaults to 8096
 ```
 
 The API token can be generated in **Dashboard → API Keys**.
@@ -91,13 +104,13 @@ The API token can be generated in **Dashboard → API Keys**.
 ```toml
 [player]
 name = "plex"
-host = "localhost"
+host = "localhost" # optional, defaults to localhost
+port = 32400  # optional, defaults to 32400
 token = "your_token_here"
 user_name = "your_username"
-port = 32400  # optional, defaults to 32400
 ```
 
-The API token can be obtained by clicking any item → **Get Info → View XML**
+The API token can be obtained by clicking any item → **Get Info → View XML**<br>
 and copying the **X-Plex-Token** value from the URL.
 
 </details>
