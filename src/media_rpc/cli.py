@@ -290,7 +290,7 @@ async def _cli() -> None:
 
     await rpc.start(DISCORD_CLIENT_ID)
 
-    asyncio.create_task(_poll(player))
+    poll_task = asyncio.create_task(_poll(player))
     
     try:
         await asyncio.Event().wait()
@@ -298,6 +298,13 @@ async def _cli() -> None:
         pass
     finally:
         # clean things out :)
+
+        poll_task.cancel()
+        try:
+            await poll_task
+        except asyncio.CancelledError:
+            pass
+
         await player._client.close()
         await adapter._client.close()
         await uploader._client.close()
