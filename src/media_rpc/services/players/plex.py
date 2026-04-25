@@ -15,9 +15,9 @@ class Plex:
     def __init__(
         self,
         event_bus: EventBus,
-        host: str,
         token: str,
         user_name: str,
+        host: str = "localhost",
         port: int = 32400,
     ) -> None:
         """
